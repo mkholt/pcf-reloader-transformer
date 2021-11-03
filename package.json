@@ -9,6 +9,9 @@
     "prepare": "npm run build",
     "test": "jest --verbose"
   },
+  "files": [
+    "dist"
+  ],
   "keywords": [
     "typescript",
     "ts",
@@ -24,7 +27,7 @@
   "author": "mkholt <github@t-hawk.com>",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/mkholt/pcf-reloader-transformer.git"
   },
   "license": "MIT",
   "devDependencies": {
