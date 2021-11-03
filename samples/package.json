@@ -1,0 +1,19 @@
+{
+  "name": "pcf-reloader-transformer-samples",
+  "version": "0.0.1",
+  "description": "Sample files for testing out the transformer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "prepare": "ts-patch i"
+  },
+  "author": "mkholt <github@t-hawk.com>",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "pcf-reloader-transformer": "file:..",
+    "typescript": "^4.4.4",
+    "ts-patch": "^1.4.5"
+  }
+}

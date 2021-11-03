@@ -106,3 +106,5 @@ dist
 reports/
 # Sample generated files
 samples/out/
+# Do not store .generated.ts files
+*.generated.ts

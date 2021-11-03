@@ -15,7 +15,7 @@
 		],
 		"plugins": [
 			{
-				"transform": "../src/index.ts",
+				"transform": "pcf-reloader-transformer",
 				"type": "config",
 				"printGenerated": true,
 				"verbose": true
