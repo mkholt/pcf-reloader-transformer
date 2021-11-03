@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"jsx": "react",
+		"target": "es5",
+		"module": "commonjs",
+		"lib": [
+			"ES6",
+			"DOM"
+		],
+		"strict": true,
+		"strictPropertyInitialization": false,
+		"outDir": "./out",
+		"typeRoots": [
+			"../node_modules/@types"
+		],
+		"plugins": [
+			{
+				"transform": "../src/index.ts",
+				"type": "config",
+				"printGenerated": true,
+				"verbose": true
+			}
+		]
+	},
+	"exclude": [
+		"../node_modules",
+		"*.generated.ts"
+	]
+}
