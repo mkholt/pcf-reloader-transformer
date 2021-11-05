@@ -1,6 +1,7 @@
 import ts = require("typescript")
 
-export const paramsTypeName = ts.factory.createIdentifier("PcfReloadParams")
+export const paramsTypeNameString = "PcfReloadParams"
+export const paramsTypeName = ts.factory.createIdentifier(paramsTypeNameString)
 export const paramsVariableName = ts.factory.createIdentifier("pcfReloadParams")
 
 export const paramNames = {

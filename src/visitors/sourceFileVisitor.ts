@@ -10,13 +10,16 @@ import { constructorVisitor } from "./constructorVisitor"
 
 export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) =>
 	(node: Node): Node[] | Node => {
+		// Check: Not a class, skip it
 		if (!isClassDeclaration(node)) return node
 
+		// Check: Implements ComponentFramework.StandardControl
 		const implement = node.heritageClauses?.filter(h => h.token == SyntaxKind.ImplementsKeyword
 			&& h.types.find(t => t.getText() === "ComponentFramework.StandardControl<IInputs, IOutputs>"))
 
 		if (!implement?.length) return node
 
+		// Check: Has class name so we can construct meaninfully
 		const className = node.name
 		if (!className) return node
 
