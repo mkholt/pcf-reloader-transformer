@@ -7,7 +7,7 @@ import { windowVariableName } from "./windowExtensions";
 export const listenCallName = factory.createIdentifier("listenToWSUpdates")
 const msg = factory.createIdentifier("msg");
 
-export function createListenerMethod() {
+export function createListenerMethod(wsListeningAddress?: string) {
 	const address = factory.createIdentifier("address")
 	const socket = factory.createIdentifier("socket")
 	
@@ -18,7 +18,7 @@ export function createListenerMethod() {
 			factory.createPropertyAccessExpression(windowVariableName, paramsVariableName),
 			params
 		),
-		declareConst(address, factory.createStringLiteral("ws://127.0.0.1:8181/ws")),
+		declareConst(address, factory.createStringLiteral(wsListeningAddress ?? "ws://127.0.0.1:8181/ws")),
 		declareConst(socket, factory.createNewExpression(
 			factory.createIdentifier("WebSocket"), undefined, [ address ])),
 		setVariable(

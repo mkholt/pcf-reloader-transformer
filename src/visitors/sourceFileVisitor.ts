@@ -40,7 +40,7 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 
 		const windowDeclaration = createAndDeclareWindowInterface()
 
-		const listenMethod = createListenerMethod()
+		const listenMethod = createListenerMethod(opts.wsAddress)
 
 		// Check if the class has a constructor to hook into
 		const foundConstructor = forEachChild(node, constructorVisitor)

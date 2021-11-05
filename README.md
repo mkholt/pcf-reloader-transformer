@@ -72,7 +72,8 @@ The transformer supports the following configuration settings.
 
 The settings are specified as part of the plugin specification in _tsconfig.json_
 
-| Option			| Type		| Description
-|--------			|------		|-------------
-| printGenerated	| boolean	| If true, the generated typescript code will be output to a file alongside the detected file. If the file is named `index.ts`, the generated file will be `index.generated.ts`
-| verbose			| boolean	| If true, status messages will be printed during the transformation
+| Option			| Type		| Description	| Default
+|--------			|------		|-------------	|---------
+| printGenerated	| boolean	| If `true`, the generated typescript code will be output to a file alongside the detected file. If the file is named `index.ts`, the generated file will be `index.generated.ts`	| `false`
+| verbose			| boolean	| If `true`, status messages will be printed during the transformation	| `false`
+| wsAddress			| string	| The address to use when listening for update messages.				| `ws://127.0.0.1:8181/ws`

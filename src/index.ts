@@ -7,7 +7,8 @@ import { paramsTypeNameString } from './lib/paramsType';
 
 export type IPluginConfig = PluginConfig & {
 	printGenerated?: boolean,
-	verbose?: boolean
+	verbose?: boolean,
+	wsAddress?: string,
 }
 
 export default (opts: IPluginConfig) =>
