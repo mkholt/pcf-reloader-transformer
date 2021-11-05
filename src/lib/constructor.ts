@@ -1,14 +1,11 @@
 import ts = require("typescript");
-import { declareConst } from "./helpers";
+import { access, declareConst } from "./helpers";
 import { paramNames, paramsVariableName } from "./paramsType";
 import { windowVariableName } from "./windowExtensions";
 
 export function createConstructorCall(className: ts.Identifier) {
 	const constructorStatement = ts.factory.createIfStatement(
-		ts.factory.createPropertyAccessExpression(
-			windowVariableName,
-			paramsVariableName
-		),
+		access(windowVariableName, paramsVariableName),
 		ts.factory.createExpressionStatement(ts.factory.createNewExpression(
 			className,
 			undefined,
@@ -27,26 +24,27 @@ export const createConstructorDeclaration = () =>
 	)
 
 export function createConstructorBody(ctor?: ts.ConstructorDeclaration) {
-	const windowParams = ts.factory.createPropertyAccessExpression(windowVariableName, paramsVariableName);
+	const windowParams = access(windowVariableName, paramsVariableName);
+	const id = ts.factory.createIdentifier
 
-	const paramsName = ts.factory.createIdentifier("params")
+	const paramsName = id("params")
 	const paramsConst = declareConst(paramsName, windowParams)
 
 	const initCall = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-		ts.factory.createPropertyAccessExpression(ts.factory.createThis(), ts.factory.createIdentifier("init")),
+		access(ts.factory.createThis(), id("init")),
 		undefined,
 		[
-			ts.factory.createPropertyAccessExpression(paramsName, paramNames.context),
-			ts.factory.createPropertyAccessExpression(paramsName, paramNames.noc),
-			ts.factory.createPropertyAccessExpression(paramsName, paramNames.state),
-			ts.factory.createPropertyAccessExpression(paramsName, paramNames.container)
+			access(paramsName, id(paramNames.context)),
+			access(paramsName, id(paramNames.noc)),
+			access(paramsName, id(paramNames.state)),
+			access(paramsName, id(paramNames.container))
 		]
 	))
 
 	const updateViewCall = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
-		ts.factory.createPropertyAccessExpression(ts.factory.createThis(), ts.factory.createIdentifier("updateView")),
+		access(ts.factory.createThis(), id("updateView")),
 		undefined,
-		[ts.factory.createPropertyAccessExpression(paramsName, paramNames.context)]
+		[access(paramsName, id(paramNames.context))]
 	))
 
 	const thenBlock = ts.factory.createBlock([

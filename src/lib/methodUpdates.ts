@@ -1,5 +1,5 @@
 import { factory, Identifier, isIdentifier, MethodDeclaration, NodeArray, ParameterDeclaration, Statement } from "typescript"
-import { setVariable } from "./helpers"
+import { access, setVariable } from "./helpers"
 import { listenCallName } from "./listener"
 import { paramNames, paramsVariableName } from "./paramsType"
 import { windowVariableName } from "./windowExtensions"
@@ -23,10 +23,7 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 
 	const listenCall = factory.createExpressionStatement(
 		factory.createCallExpression(
-			factory.createPropertyAccessExpression(
-				factory.createThis(),
-				listenCallName
-			),
+			access(factory.createThis(), listenCallName),
 			undefined,
 			[
 				factory.createObjectLiteralExpression([
@@ -54,15 +51,10 @@ function createUpdateViewBody(existingBody: NodeArray<Statement>, params: NodeAr
 	const names = getNamesFromParameters(params)
 	if (names.length != 1) return
 
+	const context = factory.createIdentifier(paramNames.context)
 	const ifStatement = factory.createIfStatement(
-		factory.createPropertyAccessExpression(windowVariableName, paramsVariableName),
-		setVariable(
-			factory.createPropertyAccessExpression(
-					factory.createPropertyAccessExpression(windowVariableName, paramsVariableName),
-					paramNames.context
-			),
-			names[0]
-		)
+		access(windowVariableName, paramsVariableName),
+		setVariable(access(windowVariableName, paramsVariableName, context), names[0])
 	)
 
 	const block = factory.createBlock([

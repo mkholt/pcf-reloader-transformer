@@ -1,4 +1,4 @@
-import { BindingName, Expression, factory, Identifier, NodeFlags, PropertyAccessExpression, SyntaxKind } from "typescript";
+import { BindingName, Expression, factory, Identifier, NodeFlags, ParenthesizedExpression, PropertyAccessExpression, SyntaxKind, ThisExpression } from "typescript";
 
 export const declareConst = (name: BindingName, initializer: Expression) =>
 	factory.createVariableStatement(undefined,
@@ -19,7 +19,7 @@ export function setVariable(leftHandSide: Expression, rightHandSide: Expression)
 	);
 }
 
-export function access(...parts: Identifier[]): PropertyAccessExpression|Identifier {
+export function access(...parts: (Identifier|ThisExpression|ParenthesizedExpression)[]): PropertyAccessExpression|Identifier|ThisExpression|ParenthesizedExpression {
 	if (parts.length < 2) return parts[0]
 	const val = parts.pop() as Identifier
 

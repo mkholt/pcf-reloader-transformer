@@ -6,6 +6,9 @@ import { windowVariableName } from "./windowExtensions";
 
 export const listenCallName = factory.createIdentifier("listenToWSUpdates")
 const msg = factory.createIdentifier("msg");
+const onMessage = factory.createIdentifier("onmessage");
+const webSocket = factory.createIdentifier("WebSocket");
+const htmlScriptElement = factory.createIdentifier("HTMLScriptElement");
 
 export function createListenerMethod(wsListeningAddress?: string) {
 	const address = factory.createIdentifier("address")
@@ -15,22 +18,15 @@ export function createListenerMethod(wsListeningAddress?: string) {
 
 	const body = factory.createBlock([
 		setVariable(
-			factory.createPropertyAccessExpression(windowVariableName, paramsVariableName),
+			access(windowVariableName, paramsVariableName),
 			params
 		),
 		declareConst(address, factory.createStringLiteral(wsListeningAddress ?? "ws://127.0.0.1:8181/ws")),
-		declareConst(socket, factory.createNewExpression(
-			factory.createIdentifier("WebSocket"), undefined, [ address ])),
-		setVariable(
-			factory.createPropertyAccessExpression(socket, "onmessage"),
-			createOnMessageFunction(socket)
-		),
+		declareConst(socket, factory.createNewExpression(webSocket, undefined, [ address ])),
+		setVariable(access(socket, onMessage), createOnMessageFunction(socket)),
 		factory.createExpressionStatement(
 			factory.createCallExpression(
-				factory.createPropertyAccessExpression(
-					factory.createIdentifier("console"),
-					factory.createIdentifier("log")
-				), undefined, [
+				access(factory.createIdentifier("console"), factory.createIdentifier("log")), undefined, [
 					factory.createBinaryExpression(
 						factory.createStringLiteral("Live reload enabled on "),
 						SyntaxKind.PlusToken,
@@ -52,7 +48,7 @@ export function createListenerMethod(wsListeningAddress?: string) {
 }
 
 function createOnMessageFunction(socket: Identifier) {
-	const msgData = factory.createPropertyAccessExpression(msg, factory.createIdentifier("data"))
+	const msgData = access(msg, factory.createIdentifier("data"))
 
 	const script = factory.createIdentifier("script");
 	const parent = factory.createIdentifier("parent");
@@ -76,22 +72,13 @@ function createOnMessageFunction(socket: Identifier) {
 			undefined, [ factory.createStringLiteral("Reload triggered") ]
 		)),
 		factory.createExpressionStatement(factory.createCallExpression(
-			factory.createPropertyAccessExpression(
-				factory.createThis(),
-				factory.createIdentifier("destroy")
-			),
+			access(factory.createThis(), factory.createIdentifier("destroy")),
 			undefined,
 			undefined
 		)),
-		setVariable(
-			factory.createPropertyAccessExpression(socket, "onmessage"),
-			factory.createNull()
-		),
+		setVariable(access(socket, onMessage), factory.createNull()),
 		factory.createExpressionStatement(factory.createCallExpression(
-			factory.createPropertyAccessExpression(
-				socket,
-				"close"
-			), undefined, []
+			access(socket, factory.createIdentifier("close")), undefined, []
 		)),
 		declareConst(isScript, isScriptFunc()),
 		factory.createIfStatement(factory.createBinaryExpression(
@@ -106,26 +93,17 @@ function createOnMessageFunction(socket: Identifier) {
 		),
 		declareConst(script, createScriptElement()),
 		setVariable(
-			factory.createPropertyAccessExpression(script, factory.createIdentifier("src")),
-			factory.createPropertyAccessExpression(currentScript, factory.createIdentifier("src"))
+			access(script, factory.createIdentifier("src")),
+			access(currentScript, factory.createIdentifier("src"))
 		),
-		declareConst(parent, 
-			factory.createPropertyAccessExpression(currentScript, factory.createIdentifier("parentNode"))
+		declareConst(parent, access(currentScript, factory.createIdentifier("parentNode"))
 		),
 		factory.createIfStatement(factory.createPrefixUnaryExpression(
 			SyntaxKind.ExclamationToken,
 			parent
 		), factory.createReturnStatement()),
-		factory.createExpressionStatement(
-			factory.createCallExpression(factory.createPropertyAccessExpression(
-				currentScript,
-				factory.createIdentifier("remove")
-			), undefined, undefined)),
-		factory.createExpressionStatement(
-			factory.createCallExpression(factory.createPropertyAccessExpression(
-				parent,
-				factory.createIdentifier("appendChild")
-			), undefined, [ script ]))
+		factory.createExpressionStatement(factory.createCallExpression(access(currentScript, factory.createIdentifier("remove")), undefined, undefined)),
+		factory.createExpressionStatement(factory.createCallExpression(access(parent, factory.createIdentifier("appendChild")), undefined, [ script ]))
 	], true)
 
 	const functionDecl = factory.createArrowFunction(undefined,
@@ -145,19 +123,17 @@ const isScriptFunc = () =>
 	],
 		factory.createTypePredicateNode(undefined,
 			factory.createIdentifier("s"),
-			factory.createTypeReferenceNode(
-				factory.createIdentifier("HTMLScriptElement")
-			)),
+			factory.createTypeReferenceNode(htmlScriptElement)),
 		eqGreaterThan,
 		factory.createPrefixUnaryExpression(
 			SyntaxKind.ExclamationToken,
 			factory.createPrefixUnaryExpression(
 				SyntaxKind.ExclamationToken,
-				factory.createPropertyAccessExpression(
+				access(
 					factory.createParenthesizedExpression(factory.createAsExpression(
 						factory.createIdentifier("s"),
 						factory.createTypeReferenceNode(
-							factory.createIdentifier("HTMLScriptElement"),
+							htmlScriptElement,
 							undefined
 						)
 					)),
@@ -174,7 +150,7 @@ const callIsScript = () => factory.createPrefixUnaryExpression(
 
 const createScriptElement = () =>
 	factory.createCallExpression(
-		factory.createPropertyAccessExpression(
+		access(
 			factory.createIdentifier("document"),
 			factory.createIdentifier("createElement")
 		),

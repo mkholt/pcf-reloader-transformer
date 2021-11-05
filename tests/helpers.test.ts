@@ -42,3 +42,13 @@ test('can build multi level call', () => {
 	const node = factory.createCallExpression(access(id('some'), id('object'), id('method')), [], [id('param')])
 	expect(print(node)).toBe("some.object.method(param)")
 })
+
+test('can use this in access', () => {
+	const node = access(factory.createThis(), id('method'))
+	expect(print(node)).toBe("this.method")
+})
+
+test('can use this in declare const', () => {
+	const node = declareConst(id("var"), access(factory.createThis(), id("method")))
+	expect(print(node)).toBe("const var = this.method;")
+})
