@@ -31,6 +31,7 @@ $ npm i -D pcf-reloader-transformer
 ```
 
 ## Usage
+![PCF Reloader in action](./public/demo.gif)
 
 ### Running the transformer
 The easiest way of running the transformer is through [ts-patch](https://www.npmjs.com/package/ts-patch).
