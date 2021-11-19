@@ -1,7 +1,7 @@
 import { factory, SyntaxKind } from "typescript";
 import { currentScript } from "./currentScript";
 import { access, declareConst, eqGreaterThan, setVariable } from "./helpers";
-import { webSocketClose, webSocketOnMessage } from "./listener";
+import { webSocket, webSocketClose, webSocketOnMessage } from "./listener";
 
 export const reloadComponent = factory.createIdentifier("reloadComponent")
 
@@ -14,8 +14,10 @@ const htmlScriptElement = factory.createIdentifier("HTMLScriptElement");
  * private reloadComponent() {
  *     console.log("Reload triggered");
  *     this.destroy();
- *     socket.onmessage = null;
- *     socket.close();
+ *     if (this._reloadSocket) {
+ *         this._reloadSocket.onmessage = null;
+ *         this._reloadSocket.close();
+ *     }
  *     const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src;
  *     if (!currentScript || !isScript(currentScript))
  *         return;
@@ -42,18 +44,23 @@ function createBody() {
 	const script = factory.createIdentifier("script");
 	const parent = factory.createIdentifier("parent");
 
+	const stopListening = factory.createIfStatement(webSocket,
+		factory.createBlock([
+			setVariable(webSocketOnMessage, factory.createNull()),
+			factory.createExpressionStatement(factory.createCallExpression(webSocketClose, undefined, [])),
+		], true))
+
 	return factory.createBlock([
 		factory.createExpressionStatement(factory.createCallExpression(
 			access(factory.createIdentifier("console"), factory.createIdentifier("log")),
-			undefined, [ factory.createStringLiteral("Reload triggered") ]
+			undefined, [factory.createStringLiteral("Reload triggered")]
 		)),
 		factory.createExpressionStatement(factory.createCallExpression(
 			access(factory.createThis(), factory.createIdentifier("destroy")),
 			undefined,
 			undefined
 		)),
-		setVariable(webSocketOnMessage, factory.createNull()),
-		factory.createExpressionStatement(factory.createCallExpression(webSocketClose, undefined, [])),
+		stopListening,
 		declareConst(isScript, isScriptFunc()),
 		factory.createIfStatement(factory.createBinaryExpression(
 			factory.createPrefixUnaryExpression(
@@ -77,7 +84,7 @@ function createBody() {
 			parent
 		), factory.createReturnStatement()),
 		factory.createExpressionStatement(factory.createCallExpression(access(currentScript, factory.createIdentifier("remove")), undefined, undefined)),
-		factory.createExpressionStatement(factory.createCallExpression(access(parent, factory.createIdentifier("appendChild")), undefined, [ script ]))
+		factory.createExpressionStatement(factory.createCallExpression(access(parent, factory.createIdentifier("appendChild")), undefined, [script]))
 	], true)
 }
 

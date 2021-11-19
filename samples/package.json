@@ -4,7 +4,6 @@
   "description": "Sample files for testing out the transformer",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "prepare": "ts-patch i"
   },

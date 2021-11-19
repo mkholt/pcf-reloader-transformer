@@ -76,8 +76,10 @@ export class SampleComponent implements ComponentFramework.StandardControl<IInpu
     private reloadComponent() {
         console.log("Reload triggered");
         this.destroy();
-        this._reloadSocket.onmessage = null;
-        this._reloadSocket.close();
+        if (this._reloadSocket) {
+            this._reloadSocket.onmessage = null;
+            this._reloadSocket.close();
+        }
         const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src;
         if (!currentScript || !isScript(currentScript))
             return;

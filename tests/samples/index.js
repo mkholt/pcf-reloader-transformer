@@ -67,8 +67,10 @@ var SampleComponent = /** @class */ (function () {
     SampleComponent.prototype.reloadComponent = function () {
         console.log("Reload triggered");
         this.destroy();
-        this._reloadSocket.onmessage = null;
-        this._reloadSocket.close();
+        if (this._reloadSocket) {
+            this._reloadSocket.onmessage = null;
+            this._reloadSocket.close();
+        }
         var isScript = function (s) { return !!s.src; };
         if (!currentScript || !isScript(currentScript))
             return;

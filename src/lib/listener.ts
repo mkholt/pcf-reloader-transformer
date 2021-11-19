@@ -7,7 +7,7 @@ import { reloadComponent } from "./refresher";
 export const listenCallName = factory.createIdentifier("listenToWSUpdates")
 const webSocketTypeName = factory.createIdentifier("WebSocket")
 const webSocketFieldName = factory.createIdentifier("_reloadSocket")
-const webSocket = access(factory.createThis(), webSocketFieldName)
+export const webSocket = access(factory.createThis(), webSocketFieldName)
 export const webSocketOnMessage = access(factory.createThis(), webSocketFieldName, factory.createIdentifier("onmessage"))
 export const webSocketClose = access(factory.createThis(), webSocketFieldName, factory.createIdentifier("close"))
 

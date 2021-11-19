@@ -24,7 +24,7 @@ test('Refresher is created', () => {
 	const refresher = createRefreshMethod()
 
 	const text = print(refresher, true)
-	expect(text).toBe("private reloadComponent() { console.log(\"Reload triggered\"); this.destroy(); this._reloadSocket.onmessage = null; this._reloadSocket.close(); const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src; if (!currentScript || !isScript(currentScript)) return; const script = document.createElement(\"script\"); script.src = currentScript.src; const parent = currentScript.parentNode; if (!parent) return; currentScript.remove(); parent.appendChild(script); }")
+	expect(text).toBe("private reloadComponent() { console.log(\"Reload triggered\"); this.destroy(); if (this._reloadSocket) { this._reloadSocket.onmessage = null; this._reloadSocket.close(); } const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src; if (!currentScript || !isScript(currentScript)) return; const script = document.createElement(\"script\"); script.src = currentScript.src; const parent = currentScript.parentNode; if (!parent) return; currentScript.remove(); parent.appendChild(script); }")
 })
 
 test('listener address can be specified', () => {

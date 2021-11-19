@@ -4,6 +4,7 @@
   "description": "Automatic refreshing of PCF components when embedded on a model-driven APP in Dynamics365",
   "main": "dist/index.js",
   "scripts": {
+    "presample": "npm run build",
     "sample": "tsc -p samples/tsconfig.json",
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
