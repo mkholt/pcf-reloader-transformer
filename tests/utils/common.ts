@@ -18,7 +18,7 @@ export function printFile(file: SourceFile, collapse?: boolean) {
 }
 
 export function collapseString(s: string) {
-	return s.replace(/\s\s+/g, ' ').replace(/\n/g, '')
+	return s.replace(/\n/g, ' ').replace(/\s\s+/g, ' ')
 }
 
 export function readFile(filename: string, subpath: string = "../../samples") {
