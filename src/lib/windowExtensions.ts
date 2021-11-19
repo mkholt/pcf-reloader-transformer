@@ -1,19 +1,10 @@
 import ts from "typescript"
 import { paramsVariableName } from "./constructor"
+import { declareVar } from "./helpers"
 import { paramsTypeName } from "./paramsType"
 
 export const windowInterfaceName = ts.factory.createIdentifier("PcfWindow")
 export const windowVariableName = ts.factory.createIdentifier("window")
-
-function createWindowDeclaration() {
-	const decl = ts.factory.createVariableStatement(
-		[ts.factory.createModifier(ts.SyntaxKind.DeclareKeyword)],
-		ts.factory.createVariableDeclarationList([
-			ts.factory.createVariableDeclaration(windowVariableName, undefined, ts.factory.createTypeReferenceNode(windowInterfaceName))
-		], ts.NodeFlags.Let | ts.NodeFlags.ContextFlags))
-
-	return decl
-}
 
 export function createAndDeclareWindowInterface() {
 	const windowInterface = ts.factory.createInterfaceDeclaration(undefined, undefined, windowInterfaceName, undefined, [
@@ -24,5 +15,7 @@ export function createAndDeclareWindowInterface() {
 		ts.factory.createPropertySignature(undefined, paramsVariableName, undefined, ts.factory.createTypeReferenceNode(paramsTypeName))
 	]);
 
-	return [windowInterface, createWindowDeclaration()]
+	const decl = declareVar(windowVariableName, false, ts.factory.createTypeReferenceNode(windowInterfaceName), undefined, true)
+
+	return [windowInterface, decl]
 }

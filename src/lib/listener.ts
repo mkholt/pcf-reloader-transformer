@@ -49,7 +49,7 @@ export function createListenerMethod(wsListeningAddress?: string) {
 		factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)
 	])
 
-	const socketVarDecl = declareProperty(webSocketFieldName, propertyType, true)
+	const socketVarDecl = declareProperty(webSocketFieldName, propertyType)
 
 	return { socketVarDecl, listener: method }
 }

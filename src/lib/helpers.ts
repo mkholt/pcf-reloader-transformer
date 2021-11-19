@@ -3,19 +3,20 @@ import { BindingName, Expression, factory, Identifier, NodeFlags, ParenthesizedE
 export const id = factory.createIdentifier
 
 export const declareConst = (name: BindingName, initializer: Expression) =>
-	declareVar(name, undefined, initializer, true)
+	declareVar(name, true, undefined, initializer)
 
-export const declareVar = (name: BindingName, type?: TypeNode, initializer?: Expression, isConst = false) =>
-	factory.createVariableStatement(undefined,
+export const declareVar = (name: BindingName, isConst: boolean, type?: TypeNode, initializer?: Expression, isDeclare = false) =>
+	factory.createVariableStatement(
+		isDeclare ? [ factory.createModifier(SyntaxKind.DeclareKeyword) ] : undefined,
 		factory.createVariableDeclarationList([
 			factory.createVariableDeclaration(name, undefined, type, initializer)
-		], isConst ? NodeFlags.Const : undefined)
+		], isConst ? NodeFlags.Const : NodeFlags.Let | NodeFlags.ContextFlags)
 	)
 
-export const declareProperty = (name: PropertyName, type: TypeNode, isPrivate = false) => 
+export const declareProperty = (name: PropertyName, type: TypeNode) => 
 	factory.createPropertyDeclaration(
 		undefined,
-		isPrivate ? [factory.createModifier(SyntaxKind.PrivateKeyword)] : [],
+		[factory.createModifier(SyntaxKind.PrivateKeyword)],
 		name,
 		undefined,
 		type,
