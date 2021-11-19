@@ -7,7 +7,7 @@
     "presample": "npm run build",
     "sample": "tsc -p samples/tsconfig.json",
     "build": "tsc -p tsconfig.json",
-    "prepare": "npm run build",
+    "prepare": "ts-patch i ; npm run build",
     "test": "jest --verbose"
   },
   "files": [
