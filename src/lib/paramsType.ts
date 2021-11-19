@@ -10,6 +10,20 @@ export const paramNames = {
 	container: "container"
 }
 
+/**
+ * Create the type declaration for extending the window
+ * 
+ * ```
+ * type PcfReloadParams = {
+ *     context: ComponentFramework.Context<IInputs>;
+ *     notifyOutputChanged: () => void;
+ *     state: ComponentFramework.Dictionary;
+ *     container: HTMLDivElement;
+ * };
+ * ```
+ * 
+ * @returns The params type
+ */
 export function createParamsType() {
 	const paramsTypeLiteral = ts.factory.createTypeLiteralNode([
 		ts.factory.createPropertySignature(undefined, paramNames.context, undefined, ts.factory.createTypeReferenceNode("ComponentFramework.Context<IInputs>", undefined)),

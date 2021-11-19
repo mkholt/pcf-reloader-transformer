@@ -17,10 +17,10 @@ beforeEach(() => {
 
 test.each([
 	'index',
-	'index.noconstructor',
-	'index.notouch',
-	'index.default',
-	'index.patched'
+	'initialClass',
+	'noConstructor',
+	'notMatching',
+	'patched'
 ])('can handle full file (%s)', (f) => {
 	const { data, filePath } = readFile(`${f}.ts`)
 
@@ -75,7 +75,7 @@ it('can be verbose', () => {
 
 it('prints warning when skipping certain files', () => {
 	
-	const { data, filePath } = readFile(`index.patched.ts`)
+	const { data, filePath } = readFile(`patched.ts`)
 
 	const pluginOptions: IPluginConfig = { verbose: true, printGenerated: true }
 

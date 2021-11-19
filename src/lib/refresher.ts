@@ -7,6 +7,30 @@ export const reloadComponent = factory.createIdentifier("reloadComponent")
 
 const htmlScriptElement = factory.createIdentifier("HTMLScriptElement");
 
+/**
+ * Create the declaration of the reloadComponent method
+ * 
+ * ```
+ * private reloadComponent() {
+ *     console.log("Reload triggered");
+ *     this.destroy();
+ *     socket.onmessage = null;
+ *     socket.close();
+ *     const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src;
+ *     if (!currentScript || !isScript(currentScript))
+ *         return;
+ *     const script = document.createElement("script");
+ *     script.src = currentScript.src;
+ *     const parent = currentScript.parentNode;
+ *     if (!parent)
+ *         return;
+ *     currentScript.remove();
+ *     parent.appendChild(script);
+ * }
+ * ```
+ * 
+ * @returns The reloadComponent method
+ */
 export function createRefreshMethod() {
 
 	return factory.createMethodDeclaration(undefined, [

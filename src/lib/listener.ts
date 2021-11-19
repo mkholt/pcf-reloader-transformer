@@ -11,6 +11,26 @@ const webSocket = access(factory.createThis(), webSocketFieldName)
 export const webSocketOnMessage = access(factory.createThis(), webSocketFieldName, factory.createIdentifier("onmessage"))
 export const webSocketClose = access(factory.createThis(), webSocketFieldName, factory.createIdentifier("close"))
 
+/**
+ * Create the listenToWSUpdates.
+ * 
+ * ```
+ * private listenToWSUpdates(params: PcfReloadParams) {
+ *     window.pcfReloadParams = params;
+ *     const address = "ws://127.0.0.1:8181/ws";
+ *     const socket = new WebSocket(address);
+ *     socket.onmessage = msg => {
+ *         if (msg.data != "reload" && msg.data != "refreshcss")
+ *             return;
+ *         this.reloadComponent();
+ *     };
+ *     console.log("Live reload enabled on " + address);
+ * }
+ * ```
+ * 
+ * @param wsListeningAddress The address to listen to websocket messages on (defaults to ws://127.0.01:8181/ws)
+ * @returns An object containing the socket property declaration and the wsListener method
+ */
 export function createListenerMethod(wsListeningAddress?: string) {
 	const listeningAddress = factory.createStringLiteral(wsListeningAddress ?? "ws://127.0.0.1:8181/ws")
 

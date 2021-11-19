@@ -4,6 +4,30 @@ import { access, id, setVariable } from "./helpers"
 import { listenCallName } from "./listener"
 import { paramNames } from "./paramsType"
 
+/**
+ * Handles one of `init` and `updateView` methods, generating the following:
+ * 
+ * Init:
+ * ```
+ * this.listenToWSUpdates({
+ *     context: context,
+ *     notifyOutputChanged: notifyOutputChanged,
+ *     state: state,
+ *     container: container
+ * });
+ * ...existing code...
+ * ```
+ * 
+ * UpdateView:
+ * ```
+ * if (window.pcfReloadParams)
+ *     window.pcfReloadParams.context = context;
+ * ...existing code...
+ * ```
+ * 
+ * @param node The method declaration to update
+ * @returns The updated method body
+ */
 export function handleMethod(node: MethodDeclaration) {
 	const existingBody = node.body?.statements ?? factory.createNodeArray()
 

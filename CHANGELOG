@@ -1,3 +1,6 @@
+1.x (20??/??/??)
+- Move reload logic to own method
+
 1.0.1 (2021/11/05)
 - Fix: Skip files that have the PcfParams type declared to avoid double-generating code. (Issue #1)
 - Improvement: Add ability to specify the listening address

@@ -33,6 +33,8 @@ $ npm i -D pcf-reloader-transformer
 ## Usage
 ![PCF Reloader in action](./public/demo.gif)
 
+The generated code can be found in [./samples/patched.ts](./samples/patched.ts) and the corresponding compiled javascript can be found in [./tests/samples](./tests/samples)
+
 ### Running the transformer
 The easiest way of running the transformer is through [ts-patch](https://www.npmjs.com/package/ts-patch).
 
