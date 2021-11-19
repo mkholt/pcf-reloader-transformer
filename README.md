@@ -1,5 +1,6 @@
 # PCF Reloader Transformation
 [![npm](https://img.shields.io/npm/v/pcf-reloader-transformer)](https://www.npmjs.com/package/pcf-reloader-transformer)
+[![build](https://github.com/mkholt/pcf-reloader-transformer/actions/workflows/ci.yml/badge.svg)](https://github.com/mkholt/pcf-reloader-transformer/actions/workflows/ci.yml)
 
 Typescript transformation that enabled automatic reloading of PCF Components when embedded on Model-Driven forms in Dynamics 365.
 
