@@ -4,6 +4,7 @@ import { createConstructorCall, createConstructorDeclaration } from "../lib/cons
 import { createCurrentScriptAssignment } from "../lib/currentScript"
 import { createListenerMethod } from "../lib/listener"
 import { createParamsType } from "../lib/paramsType"
+import { createRefreshMethod } from "../lib/refresher"
 import { createAndDeclareWindowInterface } from "../lib/windowExtensions"
 import { classVisitor } from "./classVisitor"
 import { constructorVisitor } from "./constructorVisitor"
@@ -40,7 +41,9 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 
 		const windowDeclaration = createAndDeclareWindowInterface()
 
-		const listenMethod = createListenerMethod(opts.wsAddress)
+		const { listener: listenMethod, socketVarDecl } = createListenerMethod(opts.wsAddress)
+
+		const refreshMethod = createRefreshMethod()
 
 		// Check if the class has a constructor to hook into
 		const foundConstructor = forEachChild(node, constructorVisitor)
@@ -63,7 +66,9 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			[
 				...classDeclaration.members,
 				...(constructor ? [constructor] : []),
-				listenMethod
+				socketVarDecl,
+				listenMethod,
+				refreshMethod
 			]
 		)
 

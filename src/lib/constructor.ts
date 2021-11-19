@@ -1,11 +1,15 @@
-import ts = require("typescript");
-import { access, declareConst } from "./helpers";
-import { paramNames, paramsVariableName } from "./paramsType";
+import ts, { Identifier } from "typescript";
+import { access, declareConst, id } from "./helpers";
+import { paramNames } from "./paramsType";
 import { windowVariableName } from "./windowExtensions";
+
+export const paramsVariableName = ts.factory.createIdentifier("pcfReloadParams")
+export const paramsReference = access(windowVariableName, paramsVariableName)
+export const accessParam = (prop: Identifier) => access(windowVariableName, paramsVariableName, prop)
 
 export function createConstructorCall(className: ts.Identifier) {
 	const constructorStatement = ts.factory.createIfStatement(
-		access(windowVariableName, paramsVariableName),
+		paramsReference,
 		ts.factory.createExpressionStatement(ts.factory.createNewExpression(
 			className,
 			undefined,
@@ -22,13 +26,10 @@ export const createConstructorDeclaration = () =>
 		undefined, undefined, [],
 		createConstructorBody()
 	)
-
+	
 export function createConstructorBody(ctor?: ts.ConstructorDeclaration) {
-	const windowParams = access(windowVariableName, paramsVariableName);
-	const id = ts.factory.createIdentifier
-
 	const paramsName = id("params")
-	const paramsConst = declareConst(paramsName, windowParams)
+	const paramsConst = declareConst(paramsName, paramsReference)
 
 	const initCall = ts.factory.createExpressionStatement(ts.factory.createCallExpression(
 		access(ts.factory.createThis(), id("init")),
@@ -54,7 +55,7 @@ export function createConstructorBody(ctor?: ts.ConstructorDeclaration) {
 	], true)
 
 	const ifStatement = ts.factory.createIfStatement(
-		windowParams,
+		paramsReference,
 		thenBlock
 	)
 

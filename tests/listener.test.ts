@@ -1,20 +1,38 @@
 import { transpileModule } from "typescript"
 import { createListenerMethod } from "../src/lib/listener"
+import { createRefreshMethod } from "../src/lib/refresher"
 import { print, readFile } from "./utils/common"
 import transformer, { IPluginConfig } from "../src/index"
 
+const expectedListener = "private listenToWSUpdates(params: PcfReloadParams) { window.pcfReloadParams = params; const address = \"ws://127.0.0.1:8181/ws\"; this._reloadSocket = new WebSocket(address); this._reloadSocket.onmessage = msg => { if (msg.data != \"reload\" && msg.data != \"refreshcss\") return; this.reloadComponent(); }; console.log(\"Live reload enabled on \" + address); }"
+
 test('listener is created', () => {
-	const listener = createListenerMethod()
+	const { listener } = createListenerMethod()
 
 	const text = print(listener, true)
-	expect(text).toBe("private listenToWSUpdates(params: PcfReloadParams) { window.pcfReloadParams = params; const address = \"ws://127.0.0.1:8181/ws\"; const socket = new WebSocket(address); socket.onmessage = msg => { if (msg.data != \"reload\" && msg.data != \"refreshcss\") return; console.log(\"Reload triggered\"); this.destroy(); socket.onmessage = null; socket.close(); const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src; if (!currentScript || !isScript(currentScript)) return; const script = document.createElement(\"script\"); script.src = currentScript.src; const parent = currentScript.parentNode; if (!parent) return; currentScript.remove(); parent.appendChild(script); }; console.log(\"Live reload enabled on \" + address); }")
+	expect(text).toBe(expectedListener)
+})
+
+test('socket var is declared', () => {
+	const { socketVarDecl } = createListenerMethod()
+
+	const text = print(socketVarDecl, true)
+	expect(text).toBe("private _reloadSocket: WebSocket | undefined;")
+})
+
+test('Refresher is created', () => {
+	const refresher = createRefreshMethod()
+
+	const text = print(refresher, true)
+	expect(text).toBe("private reloadComponent() { console.log(\"Reload triggered\"); this.destroy(); this._reloadSocket.onmessage = null; this._reloadSocket.close(); const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src; if (!currentScript || !isScript(currentScript)) return; const script = document.createElement(\"script\"); script.src = currentScript.src; const parent = currentScript.parentNode; if (!parent) return; currentScript.remove(); parent.appendChild(script); }")
 })
 
 test('listener address can be specified', () => {
-	const listener = createListenerMethod("wss://test.tld:8080/ws")
+	const { listener } = createListenerMethod("wss://test.tld:8080/ws")
 
 	const text = print(listener, true)
-	expect(text).toBe("private listenToWSUpdates(params: PcfReloadParams) { window.pcfReloadParams = params; const address = \"wss://test.tld:8080/ws\"; const socket = new WebSocket(address); socket.onmessage = msg => { if (msg.data != \"reload\" && msg.data != \"refreshcss\") return; console.log(\"Reload triggered\"); this.destroy(); socket.onmessage = null; socket.close(); const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as HTMLScriptElement).src; if (!currentScript || !isScript(currentScript)) return; const script = document.createElement(\"script\"); script.src = currentScript.src; const parent = currentScript.parentNode; if (!parent) return; currentScript.remove(); parent.appendChild(script); }; console.log(\"Live reload enabled on \" + address); }")
+
+	expect(text).toBe(expectedListener.replace("ws://127.0.0.1:8181/ws", "wss://test.tld:8080/ws"))
 })
 
 it('can specify listener address from options', () => {

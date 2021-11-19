@@ -1,8 +1,8 @@
 import { factory, Identifier, isIdentifier, MethodDeclaration, NodeArray, ParameterDeclaration, Statement } from "typescript"
-import { access, setVariable } from "./helpers"
+import { accessParam, paramsReference } from "./constructor"
+import { access, id, setVariable } from "./helpers"
 import { listenCallName } from "./listener"
-import { paramNames, paramsVariableName } from "./paramsType"
-import { windowVariableName } from "./windowExtensions"
+import { paramNames } from "./paramsType"
 
 export function handleMethod(node: MethodDeclaration) {
 	const existingBody = node.body?.statements ?? factory.createNodeArray()
@@ -51,10 +51,10 @@ function createUpdateViewBody(existingBody: NodeArray<Statement>, params: NodeAr
 	const names = getNamesFromParameters(params)
 	if (names.length != 1) return
 
-	const context = factory.createIdentifier(paramNames.context)
+	const context = id(paramNames.context)
 	const ifStatement = factory.createIfStatement(
-		access(windowVariableName, paramsVariableName),
-		setVariable(access(windowVariableName, paramsVariableName, context), names[0])
+		paramsReference,
+		setVariable(accessParam(context), names[0])
 	)
 
 	const block = factory.createBlock([

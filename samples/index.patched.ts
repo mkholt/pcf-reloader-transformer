@@ -61,6 +61,7 @@ export class SampleComponent implements ComponentFramework.StandardControl<IInpu
      */
     public destroy(): void {
     }
+    
     private listenToWSUpdates(params: PcfReloadParams) {
         window.pcfReloadParams = params;
         const address = "ws://127.0.0.1:8181/ws";
