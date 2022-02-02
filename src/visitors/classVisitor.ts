@@ -1,6 +1,14 @@
-import { isConstructorDeclaration, isMethodDeclaration, Node, factory } from "typescript"
-import { createConstructorBody } from "../lib/constructor"
-import { handleMethod } from "../lib/methodUpdates"
+import {
+	factory,
+	isConstructorDeclaration,
+	isMethodDeclaration,
+	Node,
+} from "typescript";
+
+import {
+	createConstructorBody,
+	handleMethod,
+} from "@/lib";
 
 export const classVisitor = (node: Node): Node | Node[] => {
 	if (isConstructorDeclaration(node)) {

@@ -1,5 +1,9 @@
-import { factory } from "typescript"
-import { access, declareConst } from "./helpers"
+import { factory } from "typescript";
+
+import {
+	access,
+	declareConst,
+} from "@/lib";
 
 export const currentScript = factory.createIdentifier("currentScript")
 

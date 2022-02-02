@@ -4,9 +4,9 @@ import {
 	access,
 	declareConst,
 	id,
-} from "./helpers";
-import { paramNames } from "./paramsType";
-import { windowVariableName } from "./windowExtensions";
+	paramNames,
+	windowVariableName,
+} from "@/lib";
 
 export const paramsVariableName = ts.factory.createIdentifier("pcfReloadParams")
 export const paramsReference = access(windowVariableName, paramsVariableName)

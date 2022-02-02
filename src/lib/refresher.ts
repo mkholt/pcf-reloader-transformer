@@ -3,18 +3,16 @@ import {
 	SyntaxKind,
 } from "typescript";
 
-import { currentScript } from "./currentScript";
 import {
 	access,
+	currentScript,
 	declareConst,
 	eqGreaterThan,
 	setVariable,
-} from "./helpers";
-import {
 	webSocket,
 	webSocketClose,
 	webSocketOnMessage,
-} from "./listener";
+} from "@/lib";
 
 export const reloadComponent = factory.createIdentifier("reloadComponent")
 

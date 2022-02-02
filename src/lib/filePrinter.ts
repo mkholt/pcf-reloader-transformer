@@ -6,7 +6,7 @@ import {
 	SourceFile,
 } from "typescript";
 
-import { IPluginConfig } from "../";
+import { IPluginConfig } from "@/pluginConfig";
 
 export const newPath = (fileName: string) => {
 	const dirname = path.dirname(fileName)

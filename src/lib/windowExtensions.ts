@@ -1,7 +1,10 @@
-import ts from "typescript"
-import { paramsVariableName } from "./constructor"
-import { declareVar } from "./helpers"
-import { paramsTypeName } from "./paramsType"
+import ts from "typescript";
+
+import {
+	declareVar,
+	paramsTypeName,
+	paramsVariableName,
+} from "@/lib";
 
 export const windowInterfaceName = ts.factory.createIdentifier("PcfWindow")
 export const windowVariableName = ts.factory.createIdentifier("window")

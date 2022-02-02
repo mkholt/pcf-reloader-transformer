@@ -1,8 +1,18 @@
-import { factory, SyntaxKind } from "typescript";
-import { paramsReference } from "./constructor";
-import { access, declareConst, declareProperty, eqGreaterThan, setVariable } from "./helpers";
-import { paramsTypeName } from "./paramsType";
-import { reloadComponent } from "./refresher";
+import {
+	factory,
+	SyntaxKind,
+} from "typescript";
+
+import {
+	access,
+	declareConst,
+	declareProperty,
+	eqGreaterThan,
+	paramsReference,
+	paramsTypeName,
+	reloadComponent,
+	setVariable,
+} from "@/lib";
 
 export const listenCallName = factory.createIdentifier("listenToWSUpdates")
 const webSocketTypeName = factory.createIdentifier("WebSocket")

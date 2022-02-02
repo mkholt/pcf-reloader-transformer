@@ -9,16 +9,14 @@ import {
 } from "typescript";
 
 import {
-	accessParam,
-	paramsReference,
-} from "./constructor";
-import {
 	access,
+	accessParam,
 	id,
+	listenCallName,
+	paramNames,
+	paramsReference,
 	setVariable,
-} from "./helpers";
-import { listenCallName } from "./listener";
-import { paramNames } from "./paramsType";
+} from "@/lib";
 
 /**
  * Handles one of `init` and `updateView` methods, generating the following:

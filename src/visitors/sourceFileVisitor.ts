@@ -1,13 +1,28 @@
-import { factory, forEachChild, isClassDeclaration, Node, SourceFile, SyntaxKind, TransformationContext, visitEachChild } from "typescript"
-import { IPluginConfig } from ".."
-import { createConstructorCall, createConstructorDeclaration } from "../lib/constructor"
-import { createCurrentScriptAssignment } from "../lib/currentScript"
-import { createListenerMethod } from "../lib/listener"
-import { createParamsType } from "../lib/paramsType"
-import { createRefreshMethod } from "../lib/refresher"
-import { createAndDeclareWindowInterface } from "../lib/windowExtensions"
-import { classVisitor } from "./classVisitor"
-import { constructorVisitor } from "./constructorVisitor"
+import {
+	factory,
+	forEachChild,
+	isClassDeclaration,
+	Node,
+	SourceFile,
+	SyntaxKind,
+	TransformationContext,
+	visitEachChild,
+} from "typescript";
+
+import {
+	createAndDeclareWindowInterface,
+	createConstructorCall,
+	createConstructorDeclaration,
+	createCurrentScriptAssignment,
+	createListenerMethod,
+	createParamsType,
+	createRefreshMethod,
+} from "@/lib";
+import { IPluginConfig } from "@/pluginConfig";
+import {
+	classVisitor,
+	constructorVisitor,
+} from "@/visitors";
 
 export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) =>
 	(node: Node): Node[] | Node => {
