@@ -58,19 +58,20 @@ To run the transformer, add it to _plugins_ in your _tsconfig.json_
 ### Integrating
 The transformation injects code in any class that implements `ComponentFramework.StandardControl<IInputs, IOutputs>`.
 
-The code will set up a listener to a websocket, and when receiving a message on the socket, will unload the PCF, reload the `bundle.js`, and re-initialize the PCF.
+The code will listen for messages passed to the [PCF Test Harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness), unload the PCF, reload the `bundle.js`, and re-initialize the PCF with the current context.
 
-The code expects the PCF test harness to be running, as such, to use the transformation, after compiling, start the PCF test harness in watch-mode.
+The code expects the [PCF test harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness) to be running in watch-mode.
 
 #### Fiddler
 The easiest way to get the updated bundle on the form is to inject it using Fiddler.
 
-After publishing the component for the first time, add two AutoResponder rules on the following format:
+After publishing the component for the first time, an AutoResponder rule on the following format:
 
 | If request matches...	| then respond with...
 |----------------------	|---------------------
 | REGEX:(?insx).+\/WebResources\/cc_(?'namespace'[^.]+)\.([^/]+)\/bundle.js	| __sourcedir__\${namespace}\out\controls\${namespace}\bundle.js
-| REGEX:(?insx).+\/WebResources\/cc_(?'namespace'[^.]+)\.([^/]+)\/bundle.js | *header:Cache-Control: must-revalidate
+
+For details on setting up Fiddler for PCF debugging, see [Microsoft Docs](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#using-fiddler).
 
 ### Settings
 The transformer supports the following configuration settings.
@@ -82,3 +83,4 @@ The settings are specified as part of the plugin specification in _tsconfig.json
 | printGenerated	| boolean	| If `true`, the generated typescript code will be output to a file alongside the detected file. If the file is named `index.ts`, the generated file will be `index.generated.ts`	| `false`
 | verbose			| boolean	| If `true`, status messages will be printed during the transformation	| `false`
 | wsAddress			| string	| The address to use when listening for update messages.				| `ws://127.0.0.1:8181/ws`
+| useBrowsersync	| boolean	| If `true` use the BrowserSync.io / Socket.io based integration, otherwise use a raw websocket	| `true`

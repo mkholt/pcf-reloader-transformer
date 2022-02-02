@@ -1,5 +1,6 @@
-1.x (20??/??/??)
+1.x (2022/??/??)
 - Move reload logic to own method
+- Support for Browser-Sync based communication (since pcf-start 1.11.4)
 
 1.0.1 (2021/11/05)
 - Fix: Skip files that have the PcfParams type declared to avoid double-generating code. (Issue #1)
