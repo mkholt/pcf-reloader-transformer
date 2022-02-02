@@ -1,8 +1,24 @@
-import { factory, Identifier, isIdentifier, MethodDeclaration, NodeArray, ParameterDeclaration, Statement } from "typescript"
-import { accessParam, paramsReference } from "./constructor"
-import { access, id, setVariable } from "./helpers"
-import { listenCallName } from "./listener"
-import { paramNames } from "./paramsType"
+import {
+	factory,
+	Identifier,
+	isIdentifier,
+	MethodDeclaration,
+	NodeArray,
+	ParameterDeclaration,
+	Statement,
+} from "typescript";
+
+import {
+	accessParam,
+	paramsReference,
+} from "./constructor";
+import {
+	access,
+	id,
+	setVariable,
+} from "./helpers";
+import { listenCallName } from "./listener";
+import { paramNames } from "./paramsType";
 
 /**
  * Handles one of `init` and `updateView` methods, generating the following:
@@ -32,14 +48,17 @@ export function handleMethod(node: MethodDeclaration) {
 	const existingBody = node.body?.statements ?? factory.createNodeArray()
 
 	switch (node.name.getText()) {
-		case 'init':
-			return createInitBody(existingBody, node.parameters)
-		case 'updateView':
-			return createUpdateViewBody(existingBody, node.parameters)
+	case 'init':
+		return createInitBody(existingBody, node.parameters)
+	case 'updateView':
+		return createUpdateViewBody(existingBody, node.parameters)
 	}
 
 	return undefined
 }
+
+const getNamesFromParameters = (params: NodeArray<ParameterDeclaration>) =>
+	params.filter((p): p is ParameterDeclaration & { name: Identifier}  => isIdentifier(p.name)).map(p => p.name)
 
 function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<ParameterDeclaration>) {
 	const names = getNamesFromParameters(params)
@@ -67,9 +86,6 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 
 	return block
 }
-
-const getNamesFromParameters = (params: NodeArray<ParameterDeclaration>) =>
-	params.filter((p): p is ParameterDeclaration & { name: Identifier}  => isIdentifier(p.name)).map(p => p.name)
 
 function createUpdateViewBody(existingBody: NodeArray<Statement>, params: NodeArray<ParameterDeclaration>) {
 	const names = getNamesFromParameters(params)

@@ -99,8 +99,8 @@ function createOnMessageFunction() {
 
 	const functionDecl = factory.createArrowFunction(undefined,
 		undefined, [
-		factory.createParameterDeclaration(undefined, undefined, undefined, msg)
-	], undefined, eqGreaterThan, body)
+			factory.createParameterDeclaration(undefined, undefined, undefined, msg)
+		], undefined, eqGreaterThan, body)
 
 	return functionDecl
 }

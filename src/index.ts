@@ -1,9 +1,9 @@
-import * as ts from 'typescript';
-//import { FilePrinter } from './lib/filePrinter';
-import { visitor } from './visitors/sourceFileVisitor';
-import { PluginConfig } from "ts-patch"
-import FilePrinter from './lib/filePrinter';
-import { paramsTypeNameString } from './lib/paramsType';
+import { PluginConfig } from "ts-patch";
+import ts from "typescript";
+
+import FilePrinter from "./lib/filePrinter";
+import { paramsTypeNameString } from "./lib/paramsType";
+import { visitor } from "./visitors/sourceFileVisitor";
 
 export type IPluginConfig = PluginConfig & {
 	printGenerated?: boolean,

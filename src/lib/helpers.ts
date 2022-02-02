@@ -1,19 +1,31 @@
-import { BindingName, Expression, factory, Identifier, NodeFlags, ParenthesizedExpression, PropertyAccessExpression, PropertyName, SyntaxKind, ThisExpression, TypeNode } from "typescript";
+import {
+	BindingName,
+	Expression,
+	factory,
+	Identifier,
+	NodeFlags,
+	ParenthesizedExpression,
+	PropertyAccessExpression,
+	PropertyName,
+	SyntaxKind,
+	ThisExpression,
+	TypeNode,
+} from "typescript";
 
 export const id = factory.createIdentifier
 
-export const declareConst = (name: BindingName, initializer: Expression) =>
-	declareVar(name, true, undefined, initializer)
-
 export const declareVar = (name: BindingName, isConst: boolean, type?: TypeNode, initializer?: Expression, isDeclare = false) =>
 	factory.createVariableStatement(
-		isDeclare ? [ factory.createModifier(SyntaxKind.DeclareKeyword) ] : undefined,
+		isDeclare ? [factory.createModifier(SyntaxKind.DeclareKeyword)] : undefined,
 		factory.createVariableDeclarationList([
 			factory.createVariableDeclaration(name, undefined, type, initializer)
 		], isConst ? NodeFlags.Const : NodeFlags.Let | NodeFlags.ContextFlags)
 	)
 
-export const declareProperty = (name: PropertyName, type: TypeNode) => 
+export const declareConst = (name: BindingName, initializer: Expression) =>
+	declareVar(name, true, undefined, initializer)
+
+export const declareProperty = (name: PropertyName, type: TypeNode) =>
 	factory.createPropertyDeclaration(
 		undefined,
 		[factory.createModifier(SyntaxKind.PrivateKeyword)],

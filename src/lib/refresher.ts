@@ -1,7 +1,20 @@
-import { factory, SyntaxKind } from "typescript";
+import {
+	factory,
+	SyntaxKind,
+} from "typescript";
+
 import { currentScript } from "./currentScript";
-import { access, declareConst, eqGreaterThan, setVariable } from "./helpers";
-import { webSocket, webSocketClose, webSocketOnMessage } from "./listener";
+import {
+	access,
+	declareConst,
+	eqGreaterThan,
+	setVariable,
+} from "./helpers";
+import {
+	webSocket,
+	webSocketClose,
+	webSocketOnMessage,
+} from "./listener";
 
 export const reloadComponent = factory.createIdentifier("reloadComponent")
 
@@ -34,11 +47,58 @@ const htmlScriptElement = factory.createIdentifier("HTMLScriptElement");
  * @returns The reloadComponent method
  */
 export function createRefreshMethod() {
-
 	return factory.createMethodDeclaration(undefined, [
 		factory.createModifier(SyntaxKind.PrivateKeyword)
 	], undefined, reloadComponent, undefined, undefined, [], undefined, createBody())
 }
+
+const isScript = factory.createIdentifier("isScript");
+const callIsScript = () => factory.createPrefixUnaryExpression(
+	SyntaxKind.ExclamationToken,
+	factory.createCallExpression(isScript, undefined, [currentScript])
+);
+
+const isScriptFunc = () =>
+	factory.createArrowFunction(
+		undefined, undefined, [
+			factory.createParameterDeclaration(undefined, undefined, undefined, "s", undefined,
+				factory.createTypeReferenceNode("HTMLOrSVGScriptElement"),
+				undefined
+			)],
+		factory.createTypePredicateNode(undefined,
+			factory.createIdentifier("s"),
+			factory.createTypeReferenceNode(htmlScriptElement)),
+		eqGreaterThan,
+		factory.createPrefixUnaryExpression(
+			SyntaxKind.ExclamationToken,
+			factory.createPrefixUnaryExpression(
+				SyntaxKind.ExclamationToken,
+				access(
+					factory.createParenthesizedExpression(factory.createAsExpression(
+						factory.createIdentifier("s"),
+						factory.createTypeReferenceNode(
+							htmlScriptElement,
+							undefined
+						)
+					)),
+					factory.createIdentifier("src")
+				)
+			)
+		));
+
+
+const createScriptElement = () =>
+	factory.createCallExpression(
+		access(
+			factory.createIdentifier("document"),
+			factory.createIdentifier("createElement")
+		),
+		undefined,
+		[
+			factory.createStringLiteral("script")
+		]
+	);
+
 
 function createBody() {
 	const script = factory.createIdentifier("script");
@@ -68,10 +128,7 @@ function createBody() {
 				currentScript
 			),
 			SyntaxKind.BarBarToken,
-			callIsScript()
-		),
-			factory.createReturnStatement()
-		),
+			callIsScript()), factory.createReturnStatement()),
 		declareConst(script, createScriptElement()),
 		setVariable(
 			access(script, factory.createIdentifier("src")),
@@ -87,49 +144,3 @@ function createBody() {
 		factory.createExpressionStatement(factory.createCallExpression(access(parent, factory.createIdentifier("appendChild")), undefined, [script]))
 	], true)
 }
-
-const isScriptFunc = () =>
-	factory.createArrowFunction(undefined, undefined, [
-		factory.createParameterDeclaration(undefined, undefined, undefined, "s", undefined,
-			factory.createTypeReferenceNode("HTMLOrSVGScriptElement"),
-			undefined
-		)
-	],
-		factory.createTypePredicateNode(undefined,
-			factory.createIdentifier("s"),
-			factory.createTypeReferenceNode(htmlScriptElement)),
-		eqGreaterThan,
-		factory.createPrefixUnaryExpression(
-			SyntaxKind.ExclamationToken,
-			factory.createPrefixUnaryExpression(
-				SyntaxKind.ExclamationToken,
-				access(
-					factory.createParenthesizedExpression(factory.createAsExpression(
-						factory.createIdentifier("s"),
-						factory.createTypeReferenceNode(
-							htmlScriptElement,
-							undefined
-						)
-					)),
-					factory.createIdentifier("src")
-				)
-			)
-		));
-
-const isScript = factory.createIdentifier("isScript");
-const callIsScript = () => factory.createPrefixUnaryExpression(
-	SyntaxKind.ExclamationToken,
-	factory.createCallExpression(isScript, undefined, [currentScript])
-);
-
-const createScriptElement = () =>
-	factory.createCallExpression(
-		access(
-			factory.createIdentifier("document"),
-			factory.createIdentifier("createElement")
-		),
-		undefined,
-		[
-			factory.createStringLiteral("script")
-		]
-	);

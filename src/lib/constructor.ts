@@ -1,5 +1,10 @@
 import ts, { Identifier } from "typescript";
-import { access, declareConst, id } from "./helpers";
+
+import {
+	access,
+	declareConst,
+	id,
+} from "./helpers";
 import { paramNames } from "./paramsType";
 import { windowVariableName } from "./windowExtensions";
 
@@ -32,24 +37,6 @@ export function createConstructorCall(className: ts.Identifier) {
 	return constructorStatement
 }
 
-/**
- * Declare the constructor method, using the body from `createConstructorBody`
- * 
- * ```
- * constructor() {
- *     ...constructor body...
- * }
- * ```
- * 
- * @see createConstructorBody
- * @returns The constructor declaration
- */
-export const createConstructorDeclaration = () =>
-	ts.factory.createConstructorDeclaration(
-		undefined, undefined, [],
-		createConstructorBody()
-	)
-	
 /**
  * Generate the body block (not the method) of the constructor
  * 
@@ -106,3 +93,21 @@ export function createConstructorBody(ctor?: ts.ConstructorDeclaration) {
 
 	return block
 }
+
+/**
+ * Declare the constructor method, using the body from `createConstructorBody`
+ * 
+ * ```
+ * constructor() {
+ *     ...constructor body...
+ * }
+ * ```
+ * 
+ * @see createConstructorBody
+ * @returns The constructor declaration
+ */
+export const createConstructorDeclaration = () =>
+	ts.factory.createConstructorDeclaration(
+		undefined, undefined, [],
+		createConstructorBody()
+	)
