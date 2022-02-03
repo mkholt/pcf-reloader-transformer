@@ -47,7 +47,7 @@ export function setVariable(leftHandSide: Expression, rightHandSide: Expression)
 	);
 }
 
-export function access(...parts: (Identifier | ThisExpression | ParenthesizedExpression)[]): PropertyAccessExpression | Identifier | ThisExpression | ParenthesizedExpression {
+export const access = (...parts: (Identifier | ThisExpression | ParenthesizedExpression)[]): PropertyAccessExpression | Identifier | ThisExpression | ParenthesizedExpression => {
 	if (parts.length < 2) return parts[0]
 	const val = parts.pop() as Identifier
 

@@ -16,7 +16,7 @@ import {
 	paramNames,
 	paramsReference,
 	setVariable,
-} from "@/lib";
+} from "./";
 
 /**
  * Handles one of `init` and `updateView` methods, generating the following:

@@ -8,7 +8,7 @@ import {
 import {
 	createConstructorBody,
 	handleMethod,
-} from "@/lib";
+} from "../lib";
 
 export const classVisitor = (node: Node): Node | Node[] => {
 	if (isConstructorDeclaration(node)) {

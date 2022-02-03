@@ -4,7 +4,7 @@ import {
 	declareVar,
 	paramsTypeName,
 	paramsVariableName,
-} from "@/lib";
+} from "./";
 
 export const windowInterfaceName = ts.factory.createIdentifier("PcfWindow")
 export const windowVariableName = ts.factory.createIdentifier("window")

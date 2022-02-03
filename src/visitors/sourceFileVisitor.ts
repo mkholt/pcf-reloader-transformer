@@ -1,4 +1,4 @@
-import {
+import ts, {
 	factory,
 	forEachChild,
 	isClassDeclaration,
@@ -17,27 +17,45 @@ import {
 	createListenerMethod,
 	createParamsType,
 	createRefreshMethod,
-} from "@/lib";
-import { IPluginConfig } from "@/pluginConfig";
+} from "../lib";
+import { IPluginConfig } from "../pluginConfig";
 import {
 	classVisitor,
 	constructorVisitor,
-} from "@/visitors";
+} from "./";
 
-export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) =>
-	(node: Node): Node[] | Node => {
-		// Check: Not a class, skip it
-		if (!isClassDeclaration(node)) return node
+type hasName = {
+	name: Exclude<ts.ClassDeclaration['name'], undefined>
+}
+const isValidNode = (node: Node): node is ts.ClassDeclaration & hasName => {
+	// Check: Not a class, skip it
+	if (!isClassDeclaration(node)) return false
 
-		// Check: Implements ComponentFramework.StandardControl
-		const implement = node.heritageClauses?.filter(h => h.token == SyntaxKind.ImplementsKeyword
-			&& h.types.find(t => t.getText() === "ComponentFramework.StandardControl<IInputs, IOutputs>"))
+	// Check: Implements ComponentFramework.StandardControl
+	const implement = node.heritageClauses?.filter(h => h.token == SyntaxKind.ImplementsKeyword
+		&& h.types.find(t => t.getText() === "ComponentFramework.StandardControl<IInputs, IOutputs>"))
 
-		if (!implement?.length) return node
+	if (!implement?.length) return false
 
-		// Check: Has class name so we can construct meaninfully
+	// Check: Has class name so we can construct meaninfully
+	const className = node.name
+	if (!className) return false
+
+	return true
+}
+
+export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) => {
+	//console.log("Initializing visitor to " + sourceFile.fileName)
+	return (node: Node): Node[] | Node => {
+		//console.log("Visiting node of type " + node.kind)
+		if (!isValidNode(node)) {
+			//console.log("Invalid node: " + node.kind)
+			return node
+		}
+
+		//console.log("Valid node: " + node.name)
+
 		const className = node.name
-		if (!className) return node
 
 		if (opts.verbose) {
 			const fileName = sourceFile.fileName
@@ -95,3 +113,4 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			constructorDeclaration
 		]
 	}
+}

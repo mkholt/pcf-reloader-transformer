@@ -12,7 +12,7 @@ import {
 	paramsTypeName,
 	reloadComponent,
 	setVariable,
-} from "@/lib";
+} from "./";
 
 export const listenCallName = factory.createIdentifier("listenToWSUpdates")
 const webSocketTypeName = factory.createIdentifier("WebSocket")

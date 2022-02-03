@@ -11,10 +11,7 @@
 		"outDir": "./dist",
 		"rootDir": "./src",
 		"esModuleInterop": true,
-		"baseUrl": ".",
-		"paths": {
-            "@/*": ["src/*"],
-        },
+		"baseUrl": "."
 	},
 	"include": [ "src" ],
 	"exclude": [ "samples" ],

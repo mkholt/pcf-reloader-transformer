@@ -12,7 +12,7 @@ import {
 	webSocket,
 	webSocketClose,
 	webSocketOnMessage,
-} from "@/lib";
+} from "./";
 
 export const reloadComponent = factory.createIdentifier("reloadComponent")
 

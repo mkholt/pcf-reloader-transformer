@@ -3,7 +3,7 @@ import { factory } from "typescript";
 import {
 	access,
 	declareConst,
-} from "@/lib";
+} from "./";
 
 export const currentScript = factory.createIdentifier("currentScript")
 
