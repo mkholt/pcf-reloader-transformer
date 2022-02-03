@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
-var currentScript = document.currentScript;
+var _pcfReloadSyncLib = require("pcf-reloader-transformer/dist/injected/sync");
+var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent = /** @class */ (function () {
     function SampleComponent() {
         if (window.pcfReloadParams) {
@@ -19,7 +20,7 @@ var SampleComponent = /** @class */ (function () {
      * @param container If a control is marked control-type='standard', it will receive an empty div element within which it can render its content.
      */
     SampleComponent.prototype.init = function (context, notifyOutputChanged, state, container) {
-        this.listenToWSUpdates({
+        this._pcfReloadListen({
             context: context,
             notifyOutputChanged: notifyOutputChanged,
             state: state,
@@ -49,34 +50,22 @@ var SampleComponent = /** @class */ (function () {
      */
     SampleComponent.prototype.destroy = function () {
     };
-    SampleComponent.prototype.listenToWSUpdates = function (params) {
-        var _this = this;
+    SampleComponent.prototype._pcfReloadListen = function (params) {
         window.pcfReloadParams = params;
-        var address = "ws://127.0.0.1:8181/ws";
-        this._reloadSocket = new WebSocket(address);
-        this._reloadSocket.onmessage = function (msg) {
-            if (msg.data != "reload" && msg.data != "refreshcss")
-                return;
-            _this.reloadComponent();
-        };
-        console.log("Live reload enabled on " + address);
+        _pcfReloadSyncLib.connect(this, "http://localhost:8181", this._pcfReloadComponent);
     };
-    SampleComponent.prototype.reloadComponent = function () {
-        console.log("Reload triggered");
+    SampleComponent.prototype._pcfReloadComponent = function () {
         this.destroy();
-        if (this._reloadSocket) {
-            this._reloadSocket.onmessage = null;
-            this._reloadSocket.close();
-        }
+        _pcfReloadSyncLib.disconnect();
         var isScript = function (s) { return !!s.src; };
-        if (!currentScript || !isScript(currentScript))
+        if (!_pcfReloadCurrentScript || !isScript(_pcfReloadCurrentScript))
             return;
         var script = document.createElement("script");
-        script.src = currentScript.src;
-        var parent = currentScript.parentNode;
+        script.src = _pcfReloadCurrentScript.src;
+        var parent = _pcfReloadCurrentScript.parentNode;
         if (!parent)
             return;
-        currentScript.remove();
+        _pcfReloadCurrentScript.remove();
         parent.appendChild(script);
     };
     return SampleComponent;
