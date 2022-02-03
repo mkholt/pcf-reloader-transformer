@@ -1,16 +1,14 @@
 import ts, { Identifier } from "typescript";
 
-import {
-	declareConst,
-	id,
-} from "./";
+import { declareConst } from "./";
 import {
 	access,
+	id,
 } from "./helpers"; // For some reason importing this from ./ doesn't work
 import { paramNames } from "./paramsType";
 import { windowVariableName } from "./windowExtensions";
 
-export const paramsVariableName = ts.factory.createIdentifier("pcfReloadParams")
+export const paramsVariableName = id("pcfReloadParams")
 export const paramsReference = access(windowVariableName, paramsVariableName)
 export const accessParam = (prop: Identifier) => access(windowVariableName, paramsVariableName, prop)
 

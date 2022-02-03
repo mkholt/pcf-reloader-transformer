@@ -1,7 +1,9 @@
 import ts from "typescript";
 
+import { id } from "./helpers";
+
 export const paramsTypeNameString = "PcfReloadParams"
-export const paramsTypeName = ts.factory.createIdentifier(paramsTypeNameString)
+export const paramsTypeName = id(paramsTypeNameString)
 
 export const paramNames = {
 	context: "context",

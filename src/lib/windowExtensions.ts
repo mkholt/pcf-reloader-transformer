@@ -5,9 +5,10 @@ import {
 	paramsTypeName,
 	paramsVariableName,
 } from "./";
+import { id } from "./helpers";
 
-export const windowInterfaceName = ts.factory.createIdentifier("PcfWindow")
-export const windowVariableName = ts.factory.createIdentifier("window")
+export const windowInterfaceName = id("PcfWindow")
+export const windowVariableName = id("window")
 
 /**
  * Create the declaration for extending window with the params type
@@ -24,7 +25,7 @@ export const windowVariableName = ts.factory.createIdentifier("window")
 export function createAndDeclareWindowInterface() {
 	const windowInterface = ts.factory.createInterfaceDeclaration(undefined, undefined, windowInterfaceName, undefined, [
 		ts.factory.createHeritageClause(ts.SyntaxKind.ExtendsKeyword, [
-			ts.factory.createExpressionWithTypeArguments(ts.factory.createIdentifier("Window"), undefined)
+			ts.factory.createExpressionWithTypeArguments(id("Window"), undefined)
 		])
 	], [
 		ts.factory.createPropertySignature(undefined, paramsVariableName, undefined, ts.factory.createTypeReferenceNode(paramsTypeName))

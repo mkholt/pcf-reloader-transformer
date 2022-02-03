@@ -14,7 +14,7 @@ Typescript transformation that enabled automatic reloading of PCF Components whe
 	- [Integrating](#integrating)
 		- [Fiddler](#fiddler)
  	- [Settings](#settings)
- - [Example](#example)
+
 
 ## Motivation
 The PowerApps Component Framework includes a test-harness which automatically reloads the component whenever it changes on disk.
@@ -82,5 +82,5 @@ The settings are specified as part of the plugin specification in _tsconfig.json
 |--------			|------		|-------------	|---------
 | printGenerated	| boolean	| If `true`, the generated typescript code will be output to a file alongside the detected file. If the file is named `index.ts`, the generated file will be `index.generated.ts`	| `false`
 | verbose			| boolean	| If `true`, status messages will be printed during the transformation	| `false`
-| wsAddress			| string	| The address to use when listening for update messages.				| `ws://127.0.0.1:8181/ws`
-| useBrowsersync	| boolean	| If `true` use the BrowserSync.io / Socket.io based integration, otherwise use a raw websocket	| `true`
+| wsAddress			| string	| The address to use when listening for update messages.				| For websocket: `ws://127.0.0.1:8181/ws`<br> For BrowserSync: `http://localhost:8181`
+| useBrowserSync	| boolean	| If `true` use the BrowserSync.io / Socket.io based integration, otherwise use a raw websocket	| `true`

@@ -17,6 +17,7 @@ import {
 	createListenerMethod,
 	createParamsType,
 	createRefreshMethod,
+	createSyncImport,
 } from "../lib";
 import { IPluginConfig } from "../pluginConfig";
 import {
@@ -44,16 +45,11 @@ const isValidNode = (node: Node): node is ts.ClassDeclaration & hasName => {
 	return true
 }
 
-export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) => {
-	//console.log("Initializing visitor to " + sourceFile.fileName)
-	return (node: Node): Node[] | Node => {
-		//console.log("Visiting node of type " + node.kind)
+export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) =>
+	(node: Node): Node[] | Node => {
 		if (!isValidNode(node)) {
-			//console.log("Invalid node: " + node.kind)
 			return node
 		}
-
-		//console.log("Valid node: " + node.name)
 
 		const className = node.name
 
@@ -65,17 +61,26 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>
 
+		// Build the sync import
+		const useBrowserSync = opts.useBrowserSync ?? true
+		const importDecl = useBrowserSync ? [createSyncImport()] : []
+
 		// Generate constructor for after class declaration
 		const constructorDeclaration = createConstructorCall(className)
 
+		// Assign currentScript variable
 		const scriptAssignment = createCurrentScriptAssignment()
 
+		// Create type definition for params
 		const typeDef = createParamsType()
 
+		// Extend window global with params
 		const windowDeclaration = createAndDeclareWindowInterface()
 
-		const { listener: listenMethod, socketVarDecl } = createListenerMethod(opts.wsAddress)
+		// Create sync listener
+		const listenMethod = createListenerMethod(opts.wsAddress, useBrowserSync)
 
+		// Create the PCF on-message reload method
 		const refreshMethod = createRefreshMethod()
 
 		// Check if the class has a constructor to hook into
@@ -89,6 +94,14 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 		// We want the class declaration as well, with modified methods
 		const classDeclaration = visitEachChild(node, classVisitor, ctx)
 
+		// Update the detected class with the new statements
+		const classMembers = [
+			...classDeclaration.members,
+			...(constructor ? [constructor] : []),
+			listenMethod,
+			refreshMethod
+		]
+
 		const newClass = factory.updateClassDeclaration(
 			classDeclaration,
 			classDeclaration.decorators,
@@ -96,16 +109,12 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			classDeclaration.name,
 			classDeclaration.typeParameters,
 			classDeclaration.heritageClauses,
-			[
-				...classDeclaration.members,
-				...(constructor ? [constructor] : []),
-				socketVarDecl,
-				listenMethod,
-				refreshMethod
-			]
+			classMembers
 		)
 
+		// Return the updated source
 		return [
+			...importDecl,
 			typeDef,
 			...windowDeclaration,
 			scriptAssignment,
@@ -113,4 +122,3 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			constructorDeclaration
 		]
 	}
-}

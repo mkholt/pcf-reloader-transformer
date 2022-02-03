@@ -1,7 +1,11 @@
-import * as c from "../src/lib/constructor"
-import { print } from "./utils/common"
-import ts from "typescript"
-import { buildClass, extractMethod } from "./utils/codeGeneration"
+import ts from "typescript";
+
+import * as c from "../src/lib/constructor";
+import {
+	buildClass,
+	extractMethod,
+} from "./utils/codeGeneration";
+import { print } from "./utils/common";
 
 test('constructor call is correct', () => {
 	const ctor = c.createConstructorCall(ts.factory.createIdentifier("test"))

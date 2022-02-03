@@ -8,15 +8,14 @@ import {
 	currentScript,
 	declareConst,
 	eqGreaterThan,
+	id,
 	setVariable,
-	webSocket,
-	webSocketClose,
-	webSocketOnMessage,
 } from "./";
+import { disconnectMethod } from "./listener";
 
-export const reloadComponent = factory.createIdentifier("reloadComponent")
+export const reloadComponent = id("_pcfReloadComponent")
 
-const htmlScriptElement = factory.createIdentifier("HTMLScriptElement");
+const htmlScriptElement = id("HTMLScriptElement");
 
 /**
  * Create the declaration of the reloadComponent method
@@ -50,7 +49,7 @@ export function createRefreshMethod() {
 	], undefined, reloadComponent, undefined, undefined, [], undefined, createBody())
 }
 
-const isScript = factory.createIdentifier("isScript");
+const isScript = id("isScript");
 const callIsScript = () => factory.createPrefixUnaryExpression(
 	SyntaxKind.ExclamationToken,
 	factory.createCallExpression(isScript, undefined, [currentScript])
@@ -64,7 +63,7 @@ const isScriptFunc = () =>
 				undefined
 			)],
 		factory.createTypePredicateNode(undefined,
-			factory.createIdentifier("s"),
+			id("s"),
 			factory.createTypeReferenceNode(htmlScriptElement)),
 		eqGreaterThan,
 		factory.createPrefixUnaryExpression(
@@ -73,13 +72,13 @@ const isScriptFunc = () =>
 				SyntaxKind.ExclamationToken,
 				access(
 					factory.createParenthesizedExpression(factory.createAsExpression(
-						factory.createIdentifier("s"),
+						id("s"),
 						factory.createTypeReferenceNode(
 							htmlScriptElement,
 							undefined
 						)
 					)),
-					factory.createIdentifier("src")
+					id("src")
 				)
 			)
 		));
@@ -88,8 +87,8 @@ const isScriptFunc = () =>
 const createScriptElement = () =>
 	factory.createCallExpression(
 		access(
-			factory.createIdentifier("document"),
-			factory.createIdentifier("createElement")
+			id("document"),
+			id("createElement")
 		),
 		undefined,
 		[
@@ -99,46 +98,46 @@ const createScriptElement = () =>
 
 
 function createBody() {
-	const script = factory.createIdentifier("script");
-	const parent = factory.createIdentifier("parent");
+	const script = id("script");
+	const parent = id("parent");
 
-	const stopListening = factory.createIfStatement(webSocket,
-		factory.createBlock([
-			setVariable(webSocketOnMessage, factory.createNull()),
-			factory.createExpressionStatement(factory.createCallExpression(webSocketClose, undefined, [])),
-		], true))
+	const callDestroy = factory.createExpressionStatement(factory.createCallExpression(
+		access(factory.createThis(), id("destroy")),
+		undefined,
+		undefined
+	))
+
+	const stopListening = factory.createExpressionStatement(factory.createCallExpression(
+		disconnectMethod, undefined, []
+	))
+
+	const returnIfNoScript = factory.createIfStatement(factory.createBinaryExpression(
+		factory.createPrefixUnaryExpression(
+			SyntaxKind.ExclamationToken,
+			currentScript
+		),
+		SyntaxKind.BarBarToken,
+		callIsScript()), factory.createReturnStatement())
+
+	const returnIfNoParent = factory.createIfStatement(factory.createPrefixUnaryExpression(
+		SyntaxKind.ExclamationToken,
+		parent
+	), factory.createReturnStatement())
 
 	return factory.createBlock([
-		factory.createExpressionStatement(factory.createCallExpression(
-			access(factory.createIdentifier("console"), factory.createIdentifier("log")),
-			undefined, [factory.createStringLiteral("Reload triggered")]
-		)),
-		factory.createExpressionStatement(factory.createCallExpression(
-			access(factory.createThis(), factory.createIdentifier("destroy")),
-			undefined,
-			undefined
-		)),
+		callDestroy,
 		stopListening,
 		declareConst(isScript, isScriptFunc()),
-		factory.createIfStatement(factory.createBinaryExpression(
-			factory.createPrefixUnaryExpression(
-				SyntaxKind.ExclamationToken,
-				currentScript
-			),
-			SyntaxKind.BarBarToken,
-			callIsScript()), factory.createReturnStatement()),
+		returnIfNoScript,
 		declareConst(script, createScriptElement()),
 		setVariable(
-			access(script, factory.createIdentifier("src")),
-			access(currentScript, factory.createIdentifier("src"))
+			access(script, id("src")),
+			access(currentScript, id("src"))
 		),
-		declareConst(parent, access(currentScript, factory.createIdentifier("parentNode"))
+		declareConst(parent, access(currentScript, id("parentNode"))
 		),
-		factory.createIfStatement(factory.createPrefixUnaryExpression(
-			SyntaxKind.ExclamationToken,
-			parent
-		), factory.createReturnStatement()),
-		factory.createExpressionStatement(factory.createCallExpression(access(currentScript, factory.createIdentifier("remove")), undefined, undefined)),
-		factory.createExpressionStatement(factory.createCallExpression(access(parent, factory.createIdentifier("appendChild")), undefined, [script]))
+		returnIfNoParent,
+		factory.createExpressionStatement(factory.createCallExpression(access(currentScript, id("remove")), undefined, undefined)),
+		factory.createExpressionStatement(factory.createCallExpression(access(parent, id("appendChild")), undefined, [script]))
 	], true)
 }

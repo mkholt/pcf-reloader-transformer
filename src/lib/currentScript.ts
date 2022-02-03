@@ -1,11 +1,10 @@
-import { factory } from "typescript";
-
 import {
 	access,
 	declareConst,
 } from "./";
+import { id } from "./helpers";
 
-export const currentScript = factory.createIdentifier("currentScript")
+export const currentScript = id("_pcfReloadCurrentScript")
 
 /**
  * Create the constant for getting the reference to the current script tag
@@ -20,8 +19,8 @@ export function createCurrentScriptAssignment() {
 	const currentScriptAssignment = declareConst(
 		currentScript,
 		access(
-			factory.createIdentifier("document"),
-			factory.createIdentifier("currentScript")
+			id("document"),
+			id("currentScript")
 		)
 	)
 

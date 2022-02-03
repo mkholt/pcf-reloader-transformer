@@ -1,4 +1,4 @@
-1.x (2022/??/??)
+1.x.x (2022/??/??)
 - Move reload logic to own method
 - Support for Browser-Sync based communication (since pcf-start 1.11.4)
 

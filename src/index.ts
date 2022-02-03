@@ -24,33 +24,6 @@ export default (opts: IPluginConfig) => {
 			const updatedSource = ts.visitEachChild(sourceFile, visitor(sourceFile, opts, ctx), ctx)
 
 			if (updatedSource == sourceFile) return sourceFile
-			/*if (updatedSource == sourceFile) {
-				console.log("No changes in " + sourceFile.fileName)
-				return sourceFile
-			}
-
-			const importDecl = factory.createImportDeclaration(
-				undefined,
-				undefined,
-				factory.createImportClause(
-					false,
-					factory.createIdentifier("sync"),
-					undefined
-				),
-				factory.createStringLiteral("pcf-reloader-transformer/dist/injected/sync")
-			)
-
-			const statements = [
-				importDecl,
-				...updatedSource.statements
-			]
-
-			const outputSource = factory.updateSourceFile(updatedSource, statements)
-
-			if (opts.printGenerated)
-				FilePrinter(sourceFile, outputSource, opts)
-
-			return outputSource*/
 
 			if (opts.printGenerated)
 				FilePrinter(sourceFile, updatedSource, opts)

@@ -6,20 +6,26 @@ import {
 import {
 	access,
 	declareConst,
-	declareProperty,
-	eqGreaterThan,
+	id,
 	paramsReference,
 	paramsTypeName,
 	reloadComponent,
 	setVariable,
 } from "./";
 
-export const listenCallName = factory.createIdentifier("listenToWSUpdates")
-const webSocketTypeName = factory.createIdentifier("WebSocket")
-const webSocketFieldName = factory.createIdentifier("_reloadSocket")
-export const webSocket = access(factory.createThis(), webSocketFieldName)
-export const webSocketOnMessage = access(factory.createThis(), webSocketFieldName, factory.createIdentifier("onmessage"))
-export const webSocketClose = access(factory.createThis(), webSocketFieldName, factory.createIdentifier("close"))
+const syncLibName = id("_pcfReloadSyncLib")
+
+export const listenCallName = id("_pcfReloadListen")
+export const disconnectMethod = access(syncLibName, id("disconnect"))
+
+export const createSyncImport = () => {
+	const importLocation = factory.createStringLiteral("pcf-reloader-transformer/dist/injected/sync")
+
+	const importDecl = declareConst(syncLibName, factory.createCallExpression(id("require"), undefined, [importLocation]))
+
+	return importDecl
+}
+
 
 /**
  * Create the listenToWSUpdates.
@@ -38,33 +44,31 @@ export const webSocketClose = access(factory.createThis(), webSocketFieldName, f
  * }
  * ```
  * 
- * @param wsListeningAddress The address to listen to websocket messages on (defaults to ws://127.0.01:8181/ws)
+ * @param listeningAddress The address to listen to websocket messages on (defaults to ws://127.0.01:8181/ws for websocket and http://localhost:8181 for BrowserSync)
  * @returns An object containing the socket property declaration and the wsListener method
  */
-export function createListenerMethod(wsListeningAddress?: string) {
-	const listeningAddress = factory.createStringLiteral(wsListeningAddress ?? "ws://127.0.0.1:8181/ws")
+export function createListenerMethod(listeningAddress?: string, useBrowserSync?: boolean) {
+	const defaultAddress = useBrowserSync
+		? "http://localhost:8181"
+		: "ws://127.0.0.1:8181/ws"
 
-	const address = factory.createIdentifier("address")
-	
-	const params = factory.createIdentifier("params")
+	const syncAddress = factory.createStringLiteral(listeningAddress ?? defaultAddress)
 
-	const onMessageFunc = createOnMessageFunction()
+	const methodName = useBrowserSync
+		? id("connect")
+		: id("wsConnect")
+
+	const params = id("params")
+
+	const call = factory.createCallExpression(access(syncLibName, methodName), undefined, [
+		factory.createThis(),
+		syncAddress,
+		access(factory.createThis(), reloadComponent)
+	])
+
 	const body = factory.createBlock([
 		setVariable(paramsReference, params),
-		declareConst(address, listeningAddress),
-		setVariable(webSocket, factory.createNewExpression(webSocketTypeName, undefined, [ address ])),
-		setVariable(webSocketOnMessage, onMessageFunc),
-		factory.createExpressionStatement(
-			factory.createCallExpression(
-				access(factory.createIdentifier("console"), factory.createIdentifier("log")), undefined, [
-					factory.createBinaryExpression(
-						factory.createStringLiteral("Live reload enabled on "),
-						SyntaxKind.PlusToken,
-						address
-					)
-				]
-			)
-		)
+		factory.createExpressionStatement(call)
 	], true)
 
 	const method = factory.createMethodDeclaration(undefined, [
@@ -74,43 +78,5 @@ export function createListenerMethod(wsListeningAddress?: string) {
 			factory.createTypeReferenceNode(paramsTypeName))
 	], undefined, body)
 
-	const propertyType = factory.createUnionTypeNode([
-		factory.createTypeReferenceNode(webSocketTypeName),
-		factory.createKeywordTypeNode(SyntaxKind.UndefinedKeyword)
-	])
-
-	const socketVarDecl = declareProperty(webSocketFieldName, propertyType)
-
-	return { socketVarDecl, listener: method }
-}
-
-function createOnMessageFunction() {
-	const msg = factory.createIdentifier("msg");
-
-	const msgData = access(msg, factory.createIdentifier("data"))
-
-	const body = factory.createBlock([
-		factory.createIfStatement(factory.createBinaryExpression(
-			factory.createBinaryExpression(
-				msgData,
-				SyntaxKind.ExclamationEqualsToken,
-				factory.createStringLiteral("reload")
-			),
-			SyntaxKind.AmpersandAmpersandToken,
-			factory.createBinaryExpression(
-				msgData,
-				SyntaxKind.ExclamationEqualsToken,
-				factory.createStringLiteral("refreshcss")
-			)
-		), factory.createReturnStatement(undefined)),
-		factory.createExpressionStatement(
-			factory.createCallExpression(access(factory.createThis(), reloadComponent), undefined, undefined))
-	], true)
-
-	const functionDecl = factory.createArrowFunction(undefined,
-		undefined, [
-			factory.createParameterDeclaration(undefined, undefined, undefined, msg)
-		], undefined, eqGreaterThan, body)
-
-	return functionDecl
+	return method
 }
