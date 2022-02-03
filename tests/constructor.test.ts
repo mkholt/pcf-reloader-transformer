@@ -5,7 +5,10 @@ import {
 	buildClass,
 	extractMethod,
 } from "./utils/codeGeneration";
-import { print } from "./utils/common";
+import {
+	isDefined,
+	print,
+} from "./utils/common";
 
 test('constructor call is correct', () => {
 	const ctor = c.createConstructorCall(ts.factory.createIdentifier("test"))
@@ -26,16 +29,15 @@ it.each`
 	${"{}"}					| ${"empty"}
 	${"{ console.log(); }"}	| ${"existing"}
 	${""}					| ${"undefined"}
-`("constructor, body is $description", ({ body, description: _description }: { body: string, description: string }) => {
+`("constructor, body is $description", ({ body }: { body: string }) => {
 	const { constructor } = extractMethod(buildClass(`constructor() ${body}`))
-	if (!constructor) expect(constructor).toBeDefined()
+	isDefined(constructor)
 
-	const ctor = constructor!
-	const newBody = c.createConstructorBody(ctor)
-	const ctorDecl = ts.factory.updateConstructorDeclaration(ctor,
-		ctor.decorators,
-		ctor.modifiers,
-		ctor.parameters,
+	const newBody = c.createConstructorBody(constructor)
+	const ctorDecl = ts.factory.updateConstructorDeclaration(constructor,
+		constructor.decorators,
+		constructor.modifiers,
+		constructor.parameters,
 		newBody)
 
 	const normalized = body.replace("{", "").replace("}", "").trim()

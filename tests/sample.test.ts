@@ -1,8 +1,10 @@
-import path from "path"
-import fs from "fs"
-import ts from "typescript"
-import transformer, { IPluginConfig } from "../src/index"
-import { readFile } from "./utils/common"
+import fs from "fs";
+import path from "path";
+import ts from "typescript";
+
+import transformer from "../src/index";
+import { IPluginConfig } from "../src/pluginConfig";
+import { readFile } from "./utils/common";
 
 let messages: string[] = []
 
@@ -67,7 +69,7 @@ it('can be verbose', () => {
 		}
 	})
 
-	const seps = filePath.replace(/\\/g, "\/")
+	const seps = filePath.replace(/\\/g, "/")
 	const np = path.resolve(path.dirname(filePath), 'index.generated.ts')
 	expect(consoleLogSpy).toHaveBeenCalledWith(`Found class: SampleComponent in ${seps}:3`)
 	expect(consoleLogSpy).toHaveBeenCalledWith(`Generated file written to: ${np}`)
@@ -86,7 +88,7 @@ it('prints warning when skipping certain files', () => {
 		}
 	})
 
-	const replaced = filePath.replace(/\\/g, "\/")
+	const replaced = filePath.replace(/\\/g, "/")
 	expect(consoleLogSpy).toHaveBeenCalledWith(`Params type already declared, skipping ${replaced}`)
 	expect(writeFileSpy).toHaveBeenCalledTimes(0)
 })
