@@ -10,8 +10,7 @@
 		"noFallthroughCasesInSwitch": true,
 		"outDir": "./dist",
 		"rootDir": "./src",
-		"esModuleInterop": true,
-		"baseUrl": "."
+		"esModuleInterop": true
 	},
 	"include": [ "src" ],
 	"exclude": [ "samples" ],

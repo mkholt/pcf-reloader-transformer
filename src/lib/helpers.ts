@@ -47,7 +47,9 @@ export function setVariable(leftHandSide: Expression, rightHandSide: Expression)
 	);
 }
 
-export const access = (...parts: (Identifier | ThisExpression | ParenthesizedExpression)[]): PropertyAccessExpression | Identifier | ThisExpression | ParenthesizedExpression => {
+export type AccessPart = Identifier | ThisExpression | ParenthesizedExpression
+export type AccessExpression = PropertyAccessExpression | AccessPart
+export const access = (...parts: AccessPart[]): AccessExpression => {
 	if (parts.length < 2) return parts[0]
 	const val = parts.pop() as Identifier
 
@@ -56,3 +58,9 @@ export const access = (...parts: (Identifier | ThisExpression | ParenthesizedExp
 		val
 	)
 }
+
+export const call = (callee: Expression, ...args: Expression[]) =>
+	factory.createCallExpression(callee, undefined, args)
+
+export const stmt = (expr: Expression) => factory.createExpressionStatement(expr)
+

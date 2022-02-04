@@ -1,18 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
-var _pcfReloadSyncLib = require("pcf-reloader-transformer/dist/injected/sync");
+var _pcfReloadLib = require("pcf-reloader-transformer");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent = /** @class */ (function () {
     /**
      * Empty constructor.
      */
     function SampleComponent() {
-        if (window.pcfReloadParams) {
-            var params = window.pcfReloadParams;
-            this.init(params.context, params.notifyOutputChanged, params.state, params.container);
-            this.updateView(params.context);
-        }
+        _pcfReloadLib.constructor(this, _pcfReloadCurrentScript);
     }
     /**
      * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
@@ -23,12 +19,13 @@ var SampleComponent = /** @class */ (function () {
      * @param container If a control is marked control-type='standard', it will receive an empty div element within which it can render its content.
      */
     SampleComponent.prototype.init = function (context, notifyOutputChanged, state, container) {
-        this._pcfReloadListen({
+        var _pcfReloaderParams = {
             context: context,
             notifyOutputChanged: notifyOutputChanged,
             state: state,
             container: container
-        });
+        };
+        _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
         this._container = container;
     };
     /**
@@ -36,8 +33,7 @@ var SampleComponent = /** @class */ (function () {
      * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
      */
     SampleComponent.prototype.updateView = function (context) {
-        if (window.pcfReloadParams)
-            window.pcfReloadParams.context = context;
+        _pcfReloadLib.updateContext(context);
         this._container.innerHTML = "<div>Hello, world!</div>";
     };
     /**
@@ -53,26 +49,8 @@ var SampleComponent = /** @class */ (function () {
      */
     SampleComponent.prototype.destroy = function () {
     };
-    SampleComponent.prototype._pcfReloadListen = function (params) {
-        window.pcfReloadParams = params;
-        _pcfReloadSyncLib.connect(this, "http://localhost:8181", this._pcfReloadComponent);
-    };
-    SampleComponent.prototype._pcfReloadComponent = function () {
-        this.destroy();
-        _pcfReloadSyncLib.disconnect();
-        var isScript = function (s) { return !!s.src; };
-        if (!_pcfReloadCurrentScript || !isScript(_pcfReloadCurrentScript))
-            return;
-        var script = document.createElement("script");
-        script.src = _pcfReloadCurrentScript.src;
-        var parent = _pcfReloadCurrentScript.parentNode;
-        if (!parent)
-            return;
-        _pcfReloadCurrentScript.remove();
-        parent.appendChild(script);
-    };
     return SampleComponent;
 }());
 exports.SampleComponent = SampleComponent;
-if (window.pcfReloadParams)
+if (_pcfReloadLib.hasParams())
     new SampleComponent();

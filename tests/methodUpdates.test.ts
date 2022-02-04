@@ -25,7 +25,7 @@ it.each`
 
 	const normalized = body.replace("{", "").replace("}", "").trim()
 	const oldBody = normalized.length ? " " + normalized : ""
-	expect(source).toBe(`init(param0, param1, param2, param3) { this.listenToWSUpdates({ context: param0, notifyOutputChanged: param1, state: param2, container: param3 });${oldBody} }`)
+	expect(source).toBe(`init(param0, param1, param2, param3) { this._pcfReloadListen({ context: param0, notifyOutputChanged: param1, state: param2, container: param3 });${oldBody} }`)
 })
 
 test('updateView body is built', () => {

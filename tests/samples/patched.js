@@ -2,11 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
 var currentScript = document.currentScript;
+var _pcfReloadLib = require("pcf-reloader-transformer");
+var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent = /** @class */ (function () {
     /**
      * Empty constructor.
      */
     function SampleComponent() {
+        _pcfReloadLib.constructor(this, _pcfReloadCurrentScript);
         if (window.pcfReloadParams) {
             var params = window.pcfReloadParams;
             this.init(params.context, params.notifyOutputChanged, params.state, params.container);
@@ -22,6 +25,13 @@ var SampleComponent = /** @class */ (function () {
      * @param container If a control is marked control-type='standard', it will receive an empty div element within which it can render its content.
      */
     SampleComponent.prototype.init = function (context, notifyOutputChanged, state, container) {
+        var _pcfReloaderParams = {
+            context: context,
+            notifyOutputChanged: notifyOutputChanged,
+            state: state,
+            container: container
+        };
+        _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
         this.listenToWSUpdates({
             context: context,
             notifyOutputChanged: notifyOutputChanged,
@@ -35,6 +45,7 @@ var SampleComponent = /** @class */ (function () {
      * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
      */
     SampleComponent.prototype.updateView = function (context) {
+        _pcfReloadLib.updateContext(context);
         if (window.pcfReloadParams)
             window.pcfReloadParams.context = context;
         this._container.innerHTML = "<div>Hello, world!</div>";
@@ -85,5 +96,7 @@ var SampleComponent = /** @class */ (function () {
     return SampleComponent;
 }());
 exports.SampleComponent = SampleComponent;
+if (_pcfReloadLib.hasParams())
+    new SampleComponent();
 if (window.pcfReloadParams)
     new SampleComponent();

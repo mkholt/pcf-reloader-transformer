@@ -10,15 +10,11 @@ import ts, {
 } from "typescript";
 
 import {
-	createAndDeclareWindowInterface,
 	createConstructorCall,
 	createConstructorDeclaration,
 	createCurrentScriptAssignment,
-	createListenerMethod,
-	createParamsType,
-	createRefreshMethod,
-	createSyncImport,
-} from "../lib";
+	createLibraryImport,
+} from "../builders";
 import { IPluginConfig } from "../pluginConfig";
 import {
 	classVisitor,
@@ -61,27 +57,12 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>
 
-		// Build the sync import
-		const useBrowserSync = opts.useBrowserSync ?? true
-		const importDecl = useBrowserSync ? [createSyncImport()] : []
-
-		// Generate constructor for after class declaration
-		const constructorDeclaration = createConstructorCall(className)
+		// Build the library import
+		//const useBrowserSync = opts.useBrowserSync ?? true
+		const importDecl = createLibraryImport()
 
 		// Assign currentScript variable
 		const scriptAssignment = createCurrentScriptAssignment()
-
-		// Create type definition for params
-		const typeDef = createParamsType()
-
-		// Extend window global with params
-		const windowDeclaration = createAndDeclareWindowInterface()
-
-		// Create sync listener
-		const listenMethod = createListenerMethod(opts.wsAddress, useBrowserSync)
-
-		// Create the PCF on-message reload method
-		const refreshMethod = createRefreshMethod()
 
 		// Check if the class has a constructor to hook into
 		const foundConstructor = forEachChild(node, constructorVisitor)
@@ -92,16 +73,16 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			: undefined
 
 		// We want the class declaration as well, with modified methods
-		const classDeclaration = visitEachChild(node, classVisitor, ctx)
+		const classDeclaration = visitEachChild(node, classVisitor(opts), ctx)
 
 		// Update the detected class with the new statements
 		const classMembers = [
 			...classDeclaration.members,
 			...(constructor ? [constructor] : []),
-			listenMethod,
-			refreshMethod
+			//refreshMethod
 		]
 
+		// Build the class from the updated members
 		const newClass = factory.updateClassDeclaration(
 			classDeclaration,
 			classDeclaration.decorators,
@@ -112,11 +93,12 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			classMembers
 		)
 
+		// Generate constructor for after class declaration
+		const constructorDeclaration = createConstructorCall(className)
+
 		// Return the updated source
 		return [
-			...importDecl,
-			typeDef,
-			...windowDeclaration,
+			importDecl,
 			scriptAssignment,
 			newClass,
 			constructorDeclaration

@@ -1,10 +1,10 @@
 import {
 	access,
 	declareConst,
-} from "./";
-import { id } from "./helpers";
+} from "../lib";
+import { id } from "../lib/helpers";
 
-export const currentScript = id("_pcfReloadCurrentScript")
+export const currentScriptName = id("_pcfReloadCurrentScript")
 
 /**
  * Create the constant for getting the reference to the current script tag
@@ -17,7 +17,7 @@ export const currentScript = id("_pcfReloadCurrentScript")
  */
 export function createCurrentScriptAssignment() {
 	const currentScriptAssignment = declareConst(
-		currentScript,
+		currentScriptName,
 		access(
 			id("document"),
 			id("currentScript")
