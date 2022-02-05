@@ -30,14 +30,13 @@ import {
  *     state: state,
  *     container: container
  * };
- * _pcfReloader.connect(this, "http://localhost:8181", params);
+ * _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
  * ...existing code...
  * ```
  * 
  * UpdateView:
- * ```
- * if (window.pcfReloadParams)
- *     window.pcfReloadParams.context = context;
+* ```
+ * _pcfReloadLib.updateContext(context)
  * ...existing code...
  * ```
  * 
@@ -69,7 +68,7 @@ const getNamesFromParameters = (params: NodeArray<ParameterDeclaration>) =>
  *     state: state,
  *     container: container
  * };
- * _pcfReloader.connect(this, "http://localhost:8181", params);
+ * _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
  * ...existing code...
  * ```
  * 
@@ -115,7 +114,7 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 /**
  * Build the updateView method body
  * ```
- * _pcfReloader.updateContext(context)
+ * _pcfReloadLib.updateContext(context)
  * ...existing code...
  * ```
  */

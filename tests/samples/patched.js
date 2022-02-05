@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
-var currentScript = document.currentScript;
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 var _pcfReloadLib = require("pcf-reloader-transformer");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent = /** @class */ (function () {
@@ -10,11 +10,6 @@ var SampleComponent = /** @class */ (function () {
      */
     function SampleComponent() {
         _pcfReloadLib.constructor(this, _pcfReloadCurrentScript);
-        if (window.pcfReloadParams) {
-            var params = window.pcfReloadParams;
-            this.init(params.context, params.notifyOutputChanged, params.state, params.container);
-            this.updateView(params.context);
-        }
     }
     /**
      * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
@@ -32,12 +27,6 @@ var SampleComponent = /** @class */ (function () {
             container: container
         };
         _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
-        this.listenToWSUpdates({
-            context: context,
-            notifyOutputChanged: notifyOutputChanged,
-            state: state,
-            container: container
-        });
         this._container = container;
     };
     /**
@@ -46,8 +35,6 @@ var SampleComponent = /** @class */ (function () {
      */
     SampleComponent.prototype.updateView = function (context) {
         _pcfReloadLib.updateContext(context);
-        if (window.pcfReloadParams)
-            window.pcfReloadParams.context = context;
         this._container.innerHTML = "<div>Hello, world!</div>";
     };
     /**
@@ -61,42 +48,10 @@ var SampleComponent = /** @class */ (function () {
      * Called when the control is to be removed from the DOM tree. Controls should use this call for cleanup.
      * i.e. cancelling any pending remote calls, removing listeners, etc.
      */
-    SampleComponent.prototype.destroy = function () {
-    };
-    SampleComponent.prototype.listenToWSUpdates = function (params) {
-        var _this = this;
-        window.pcfReloadParams = params;
-        var address = "ws://127.0.0.1:8181/ws";
-        this._reloadSocket = new WebSocket(address);
-        this._reloadSocket.onmessage = function (msg) {
-            if (msg.data != "reload" && msg.data != "refreshcss")
-                return;
-            _this.reloadComponent();
-        };
-        console.log("Live reload enabled on " + address);
-    };
-    SampleComponent.prototype.reloadComponent = function () {
-        console.log("Reload triggered");
-        this.destroy();
-        if (this._reloadSocket) {
-            this._reloadSocket.onmessage = null;
-            this._reloadSocket.close();
-        }
-        var isScript = function (s) { return !!s.src; };
-        if (!currentScript || !isScript(currentScript))
-            return;
-        var script = document.createElement("script");
-        script.src = currentScript.src;
-        var parent = currentScript.parentNode;
-        if (!parent)
-            return;
-        currentScript.remove();
-        parent.appendChild(script);
-    };
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    SampleComponent.prototype.destroy = function () { };
     return SampleComponent;
 }());
 exports.SampleComponent = SampleComponent;
 if (_pcfReloadLib.hasParams())
-    new SampleComponent();
-if (window.pcfReloadParams)
     new SampleComponent();

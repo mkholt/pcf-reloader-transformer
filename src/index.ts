@@ -1,5 +1,6 @@
 import ts from "typescript";
 
+import { requireVarName } from "./builders";
 import FilePrinter from "./lib/filePrinter";
 import { IPluginConfig } from "./pluginConfig";
 import { visitor } from "./visitors";
@@ -9,18 +10,19 @@ export * from "./injected"
 export default (opts: IPluginConfig) =>
 	(ctx: ts.TransformationContext) =>
 		(sourceFile: ts.SourceFile) => {
-			// TODO: This won't work anymore, check for require?
-			// Check: Source already has the type declared, if it does we've probably already handled this
-			/*const existingTypeDef = ts.forEachChild(sourceFile, (n) =>
-				ts.isTypeAliasDeclaration(n) && n.name.getText(sourceFile) === paramsTypeNameString
+			// Check: Source has import declaration, if yes, we back off
+			const existingImportDecl = ts.forEachChild(sourceFile, (n) =>
+				ts.isVariableStatement(n) &&
+				n.declarationList?.declarations?.length &&
+					n.declarationList.declarations[0].name.getText(sourceFile) === requireVarName
 					? n
 					: undefined
 			)
 
-			if (existingTypeDef) {
-				if (opts.verbose) console.log("Params type already declared, skipping " + sourceFile.fileName)
+			if (existingImportDecl) {
+				if (opts.verbose) console.log("PCF Reloader already injected, skipping " + sourceFile.fileName)
 				return sourceFile;
-			}*/
+			}
 
 			const updatedSource = ts.visitEachChild(sourceFile, visitor(sourceFile, opts, ctx), ctx)
 

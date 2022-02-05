@@ -11,84 +11,86 @@ let messages: string[] = []
 const writeFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation().mockName("fs.writeFileSync")
 const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((m) => messages.push(m)).mockName("console.log")
 
-beforeEach(() => {
-	// Reset the spys
-	jest.clearAllMocks()
-	messages = []
-})
-
-test.each([
-	'index',
-	'initialClass',
-	'noConstructor',
-	'notMatching',
-	'patched'
-])('can handle full file (%s)', (f) => {
-	const { data, filePath } = readFile(`${f}.ts`)
-
-	const pluginOptions = {}
-
-	const output = ts.transpileModule(data, {
-		fileName: filePath,
-		transformers: {
-			before: [transformer(pluginOptions)]
-		}
+describe('full sample compile', () => {
+	beforeEach(() => {
+		// Reset the spys
+		jest.clearAllMocks()
+		messages = []
 	})
 
-	const { data: result } = readFile(`${f}.js`, '../samples')
+	test.each([
+		'index',
+		'initialClass',
+		'noConstructor',
+		'notMatching',
+		'patched'
+	])('can handle full file (%s)', (f) => {
+		const { data, filePath } = readFile(`${f}.ts`)
 
-	expect(output.outputText).toBe(result)
-})
+		const pluginOptions = {}
 
+		const output = ts.transpileModule(data, {
+			fileName: filePath,
+			transformers: {
+				before: [transformer(pluginOptions)]
+			}
+		})
 
-it('can output to file', () => {
-	const { data, filePath } = readFile(`index.ts`)
+		const { data: result } = readFile(`${f}.js`, '../samples')
 
-	const pluginOptions: IPluginConfig = { printGenerated: true }
-
-	ts.transpileModule(data, {
-		fileName: filePath,
-		transformers: {
-			before: [transformer(pluginOptions)]
-		}
+		expect(output.outputText).toBe(result)
 	})
 
-	const np = path.resolve(path.dirname(filePath), 'index.generated.ts')
-	expect(writeFileSpy).toHaveBeenCalledWith(np, expect.any(String))
-})
 
-it('can be verbose', () => {
-	const { data, filePath } = readFile(`index.ts`)
+	it('can output to file', () => {
+		const { data, filePath } = readFile(`index.ts`)
 
-	const pluginOptions: IPluginConfig = { verbose: true, printGenerated: true }
+		const pluginOptions: IPluginConfig = { printGenerated: true }
 
-	ts.transpileModule(data, {
-		fileName: filePath,
-		transformers: {
-			before: [transformer(pluginOptions)]
-		}
+		ts.transpileModule(data, {
+			fileName: filePath,
+			transformers: {
+				before: [transformer(pluginOptions)]
+			}
+		})
+
+		const np = path.resolve(path.dirname(filePath), 'index.generated.ts')
+		expect(writeFileSpy).toHaveBeenCalledWith(np, expect.any(String))
 	})
 
-	const seps = filePath.replace(/\\/g, "/")
-	const np = path.resolve(path.dirname(filePath), 'index.generated.ts')
-	expect(consoleLogSpy).toHaveBeenCalledWith(`Found class: SampleComponent in ${seps}:3`)
-	expect(consoleLogSpy).toHaveBeenCalledWith(`Generated file written to: ${np}`)
-})
+	it('can be verbose', () => {
+		const { data, filePath } = readFile(`index.ts`)
 
-it('prints warning when skipping certain files', () => {
-	
-	const { data, filePath } = readFile(`patched.ts`)
+		const pluginOptions: IPluginConfig = { verbose: true, printGenerated: true }
 
-	const pluginOptions: IPluginConfig = { verbose: true, printGenerated: true }
+		ts.transpileModule(data, {
+			fileName: filePath,
+			transformers: {
+				before: [transformer(pluginOptions)]
+			}
+		})
 
-	ts.transpileModule(data, {
-		fileName: filePath,
-		transformers: {
-			before: [transformer(pluginOptions)]
-		}
+		const seps = filePath.replace(/\\/g, "/")
+		const np = path.resolve(path.dirname(filePath), 'index.generated.ts')
+		expect(consoleLogSpy).toHaveBeenCalledWith(`Found class: SampleComponent in ${seps}:3`)
+		expect(consoleLogSpy).toHaveBeenCalledWith(`Generated file written to: ${np}`)
 	})
 
-	const replaced = filePath.replace(/\\/g, "/")
-	expect(consoleLogSpy).toHaveBeenCalledWith(`Params type already declared, skipping ${replaced}`)
-	expect(writeFileSpy).toHaveBeenCalledTimes(0)
+	it('prints warning when skipping certain files', () => {
+
+		const { data, filePath } = readFile(`patched.ts`)
+
+		const pluginOptions: IPluginConfig = { verbose: true, printGenerated: true }
+
+		ts.transpileModule(data, {
+			fileName: filePath,
+			transformers: {
+				before: [transformer(pluginOptions)]
+			}
+		})
+
+		const replaced = filePath.replace(/\\/g, "/")
+		expect(consoleLogSpy).toHaveBeenCalledWith(`PCF Reloader already injected, skipping ${replaced}`)
+		expect(writeFileSpy).toHaveBeenCalledTimes(0)
+	})
 })
