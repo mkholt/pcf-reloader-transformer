@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-var _pcfReloadLib = require("pcf-reloader-transformer");
+var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent = /** @class */ (function () {
     /**

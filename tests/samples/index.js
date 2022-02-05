@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
-var _pcfReloadLib = require("pcf-reloader-transformer");
+var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent = /** @class */ (function () {
     /**

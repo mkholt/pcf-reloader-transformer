@@ -3,6 +3,8 @@ import path = require("path");
 import {
 	createPrinter,
 	EmitHint,
+	Node,
+	Printer,
 	SourceFile,
 } from "typescript";
 
@@ -16,9 +18,14 @@ export const newPath = (fileName: string) => {
 	return generatedPath
 }
 
+let _printer: Printer|undefined
+const printer = () => _printer ?? (_printer = createPrinter())
+
+export const printNode = (node: Node, sourceFile: SourceFile) =>
+	printer().printNode(EmitHint.Unspecified, node, sourceFile)
+
 export default (sourceFile: SourceFile, updatedSource: SourceFile, opt: IPluginConfig) => {
-	const printer = createPrinter()
-	const generated = printer.printNode(EmitHint.Unspecified, updatedSource, sourceFile)
+	const generated = printNode(updatedSource, sourceFile)
 
 	const generatedPath = newPath(sourceFile.fileName)
 	writeFileSync(generatedPath, generated)

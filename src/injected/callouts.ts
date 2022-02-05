@@ -10,7 +10,7 @@ const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as 
 export type ComponentType = ComponentFramework.StandardControl<unknown, unknown>
 
 let _currentScript: HTMLOrSVGScriptElement|null
-export const constructor = <T extends ComponentType>(instance: T, currentScript: HTMLOrSVGScriptElement) => {
+export const constructor = <T extends ComponentType>(instance: T, currentScript: HTMLOrSVGScriptElement|null) => {
 	_currentScript = currentScript
 	
 	if (!window.pcfReloadParams) return

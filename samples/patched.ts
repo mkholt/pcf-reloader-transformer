@@ -1,10 +1,10 @@
+import * as _pcfReloadLib from "pcf-reloader-transformer/dist/injected";
+
 import {
 	IInputs,
 	IOutputs,
 } from "./generated/ManifestTypes";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const _pcfReloadLib = require("pcf-reloader-transformer");
 const _pcfReloadCurrentScript = document.currentScript;
 export class SampleComponent implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 	private _container: HTMLDivElement;
