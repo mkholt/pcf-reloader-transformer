@@ -8,7 +8,7 @@ import {
 	mockDeep,
 } from "jest-mock-extended";
 
-import * as injected from "../src/injected";
+import * as injected from "../../src/injected";
 
 describe('callout tests', () => {
 	it('reads window params', () => {
@@ -22,7 +22,7 @@ describe('callout method calls', () => {
 
 	const init = () => {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const sample = require("./samples/noConstructor")
+		const sample = require("../samples/noConstructor")
 		const sampleClass: ComponentFramework.StandardControl<unknown, unknown> = new sample.SampleComponent()
 		const ctx = mock<ComponentFramework.Context<unknown>>()
 		const container = document.createElement("div")

@@ -1,4 +1,4 @@
-import { log } from "../src/injected";
+import { log } from "../../src/injected";
 
 describe('Run-time console logger', () => {
 	let messages: string[] = []
