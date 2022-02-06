@@ -31,7 +31,9 @@ describe('callout method calls', () => {
 	}
 
 	beforeAll(() => {
-		injectMock = mockDeep<typeof injected>()
+		injectMock = mockDeep<typeof injected>({
+			hasParams: jest.fn().mockReturnValue(false)
+		})
 		jest.mock('pcf-reloader-transformer/dist/injected', () => injectMock)
 
 		Object.defineProperty(global.document, "currentScript", { value: currentScript })
@@ -39,12 +41,18 @@ describe('callout method calls', () => {
 
 	beforeEach(() => {
 		mockClear(injectMock)
+		jest.clearAllMocks()
 	})
 
-	it('calls constructor', () => {		
-		const { sampleClass } = init()
+	it.each([true,false])("calls constructor when hasParams [$hasParams]", (hasParams: boolean) => {
+		jest.isolateModules(() => {
+			(injectMock.hasParams as jest.Mock<unknown,unknown[]>).mockReturnValueOnce(hasParams)
 
-		expect(injectMock.onConstruct).toHaveBeenCalledWith(sampleClass, currentScript)
+			const { sampleClass } = init()
+			expect(injectMock.hasParams).toHaveBeenCalledTimes(1)
+			expect(injectMock.onConstruct).toHaveBeenCalledTimes(hasParams ? 2 : 1)
+			expect(injectMock.onConstruct).toHaveBeenCalledWith(sampleClass, currentScript)
+		})
 	})
 
 	it('calls updateContext', () => {
