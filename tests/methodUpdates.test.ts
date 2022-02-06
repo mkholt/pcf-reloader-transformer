@@ -13,9 +13,9 @@ import {
 	print,
 } from "./utils/common";
 
-const initBodyInner = 'const _pcfReloaderParams = { context: param0, notifyOutputChanged: param1, state: param2, container: param3 }; _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);'
+const initBodyInner = 'const _pcfReloaderParams = { context: param0, notifyOutputChanged: param1, state: param2, container: param3 }; _pcfReloadLib.doConnect("http://localhost:8181", _pcfReloaderParams);'
 const initBody = (oldBody: string) => `init(param0, param1, param2, param3) { ${initBodyInner}${oldBody} }`
-const updateBody = (oldBody: string) => `updateView(context: ComponentFramework.Context<IInputs>) { _pcfReloadLib.updateContext(context);${oldBody} }`
+const updateBody = (oldBody: string) => `updateView(context: ComponentFramework.Context<IInputs>) { _pcfReloadLib.onUpdateContext(context);${oldBody} }`
 
 const parms = (count: number) => Array.from(Array(count).keys()).map((_, i) => 'param' + i).join(", ")
 
@@ -67,7 +67,7 @@ describe('method updates', () => {
 	test.each`
 	func			| count | inner
 	${"init"}		| ${4}	| ${initBodyInner}
-	${"updateView"}	| ${1}	| ${"_pcfReloadLib.updateContext(param0);"}
+	${"updateView"}	| ${1}	| ${"_pcfReloadLib.onUpdateContext(param0);"}
 	`('$func updated with too many parameters (!= $count)', ({ func, count, inner }) => {
 		const p = parms(count + 1)
 		const classDef = buildClass(`${func}(${p}) { }`)

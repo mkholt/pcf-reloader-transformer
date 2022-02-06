@@ -1,5 +1,5 @@
 import {
-	disconnect,
+	doDisconnect,
 	PcfReloaderWindow,
 } from "./sync";
 
@@ -10,8 +10,10 @@ const isScript = (s: HTMLOrSVGScriptElement): s is HTMLScriptElement => !!(s as 
 export type ComponentType = ComponentFramework.StandardControl<unknown, unknown>
 
 let _currentScript: HTMLOrSVGScriptElement|null
-export const constructor = <T extends ComponentType>(instance: T, currentScript: HTMLOrSVGScriptElement|null) => {
+let _instance: ComponentType|undefined
+export const onConstruct = <T extends ComponentType>(instance: T, currentScript: HTMLOrSVGScriptElement|null) => {
 	_currentScript = currentScript
+	_instance = instance
 	
 	if (!window.pcfReloadParams) return
 	
@@ -20,29 +22,31 @@ export const constructor = <T extends ComponentType>(instance: T, currentScript:
 	instance.updateView(params.context);
 }
 
-export const reloadComponent = <T extends ComponentFramework.StandardControl<unknown, unknown>>(self: T) => {
-	self.destroy();
-	disconnect();
-	if (!_currentScript || !isScript(_currentScript))
-		return;
-
-	const script = document.createElement("script");
-	script.src = _currentScript.src;
-
-	const parent = _currentScript.parentNode;
-
-	if (!parent) return
-	
-	_currentScript.remove();
-
-	parent.appendChild(script);
-}
-
 export const hasParams = () => !!window.pcfReloadParams
 
-export const updateContext = (context: ComponentFramework.Context<unknown>) => {
+export const onUpdateContext = (context: ComponentFramework.Context<unknown>) => {
 	window.pcfReloadParams = {
 		...window.pcfReloadParams,
 		context: context
 	}
+}
+
+export const reloadComponent = () => {
+	if (!_instance) return
+
+	_instance.destroy()
+	doDisconnect()
+	if (!_currentScript || !isScript(_currentScript))
+		return
+
+	const script = document.createElement("script")
+	script.src = _currentScript.src
+
+	const parent = _currentScript.parentNode
+
+	if (!parent) return
+	
+	_currentScript.remove()
+
+	parent.appendChild(script)
 }

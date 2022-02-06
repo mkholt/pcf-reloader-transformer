@@ -48,7 +48,7 @@ export function createConstructorCall(className: Identifier) {
  * @returns The body of the updated class constructor
  */
 export function createConstructorBody(ctor?: ConstructorDeclaration) {
-	const callConstruct = callLib("constructor", factory.createThis(), currentScriptName)
+	const callConstruct = callLib("onConstruct", factory.createThis(), currentScriptName)
 	const existingBody = ctor?.body?.statements ?? factory.createNodeArray([])
 
 	const block = factory.createBlock([

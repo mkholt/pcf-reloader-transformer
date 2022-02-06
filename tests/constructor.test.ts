@@ -10,7 +10,7 @@ import {
 	print,
 } from "./utils/common";
 
-const constructorBody = (oldBody: string) => `constructor() { _pcfReloadLib.constructor(this, _pcfReloadCurrentScript);${oldBody} }`
+const constructorBody = (oldBody: string) => `constructor() { _pcfReloadLib.onConstruct(this, _pcfReloadCurrentScript);${oldBody} }`
 
 describe('constructor builder', () => {
 	test('constructor call is correct', () => {

@@ -5,7 +5,7 @@ var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent = /** @class */ (function () {
     function SampleComponent() {
-        _pcfReloadLib.constructor(this, _pcfReloadCurrentScript);
+        _pcfReloadLib.onConstruct(this, _pcfReloadCurrentScript);
     }
     /**
      * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
@@ -22,7 +22,7 @@ var SampleComponent = /** @class */ (function () {
             state: state,
             container: container
         };
-        _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
+        _pcfReloadLib.doConnect("http://localhost:8181", _pcfReloaderParams);
         this._container = container;
     };
     /**
@@ -30,7 +30,7 @@ var SampleComponent = /** @class */ (function () {
      * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
      */
     SampleComponent.prototype.updateView = function (context) {
-        _pcfReloadLib.updateContext(context);
+        _pcfReloadLib.onUpdateContext(context);
         this._container.innerHTML = "<div>Hello, world!</div>";
     };
     /**

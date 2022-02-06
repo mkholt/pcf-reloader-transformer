@@ -1,9 +1,6 @@
 import socket from "socket.io-client";
 
-import {
-	ComponentType,
-	reloadComponent,
-} from "./callouts";
+import { reloadComponent } from "./callouts";
 import { log } from "./logger";
 
 type SocketIo = {
@@ -29,7 +26,7 @@ let _socket: SocketIo|null
 let _websocket: WebSocket|null
 
 const hasData = (o: unknown): o is { data: unknown } => !!(o as { data: unknown })?.data
-const bsConnect = (self: ComponentType, baseUrl: string, debug?: boolean) => {
+const bsConnect = (baseUrl: string, debug?: boolean) => {
 	const socketConfig = {
 		"reconnectionAttempts": 50,
 		"path": "/browser-sync/socket.io",
@@ -41,7 +38,7 @@ const bsConnect = (self: ComponentType, baseUrl: string, debug?: boolean) => {
 	_socket.on('connect', () => log("BrowserSync connected"))
 	_socket.on('browser:reload', () => {
 		log("Reload triggered")
-		reloadComponent(self)
+		reloadComponent()
 	})
 
 	if (debug) {
@@ -57,7 +54,7 @@ const bsConnect = (self: ComponentType, baseUrl: string, debug?: boolean) => {
 	return socketUrl
 }
 
-const wsConnect = (self: ComponentType, address: string, debug?: boolean) => {
+const wsConnect = (address: string, debug?: boolean) => {
 	_websocket = new WebSocket(address)
 	_websocket.onmessage = (msg) => {
 		if (msg.data !== "reload" && msg.data !== "refreshcss") {
@@ -66,23 +63,23 @@ const wsConnect = (self: ComponentType, address: string, debug?: boolean) => {
 		}
 		
 		log("Reload triggered")
-		reloadComponent(self)
+		reloadComponent()
 	}
 
 	return address
 }
 
-export const connect = (self: ComponentType, baseUrl: string, params: ReloadParams, debug?: boolean) => {
+export const doConnect = (baseUrl: string, params: ReloadParams, debug?: boolean) => {
 	window.pcfReloadParams = params;
 
 	const address = (baseUrl.indexOf("http") > -1)
-		? bsConnect(self, baseUrl, debug)
-		: wsConnect(self, baseUrl)
+		? bsConnect(baseUrl, debug)
+		: wsConnect(baseUrl, debug)
 
 	log("Live reload enabled on " + address)	
 }
 
-export const disconnect = () => {
+export const doDisconnect = () => {
 	if (_socket) {
 		_socket.close()
 	}

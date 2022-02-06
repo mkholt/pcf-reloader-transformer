@@ -12,7 +12,7 @@ export class SampleComponent implements ComponentFramework.StandardControl<IInpu
 	 * Empty constructor.
 	 */
 	constructor() {
-		_pcfReloadLib.constructor(this, _pcfReloadCurrentScript);
+		_pcfReloadLib.onConstruct(this, _pcfReloadCurrentScript);
 	}
 	/**
 	 * Used to initialize the control instance. Controls can kick off remote server calls and other initialization actions here.
@@ -29,7 +29,7 @@ export class SampleComponent implements ComponentFramework.StandardControl<IInpu
 			state: state,
 			container: container
 		};
-		_pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
+		_pcfReloadLib.doConnect("http://localhost:8181", _pcfReloaderParams);
 		this._container = container;
 	}
 	/**
@@ -37,7 +37,7 @@ export class SampleComponent implements ComponentFramework.StandardControl<IInpu
 	 * @param context The entire property bag available to control via Context Object; It contains values as set up by the customizer mapped to names defined in the manifest, as well as utility functions
 	 */
 	public updateView(context: ComponentFramework.Context<IInputs>): void {
-		_pcfReloadLib.updateContext(context);
+		_pcfReloadLib.onUpdateContext(context);
 		this._container.innerHTML = "<div>Hello, world!</div>";
 	}
 	/**

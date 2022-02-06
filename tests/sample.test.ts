@@ -6,9 +6,8 @@ import transformer from "../src/index";
 import { IPluginConfig } from "../src/pluginConfig";
 import { readFile } from "./utils/common";
 
-let messages: string[] = []
-
 const writeFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation().mockName("fs.writeFileSync")
+let messages: string[] = []
 const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((m) => messages.push(m)).mockName("console.log")
 
 describe('full sample compile', () => {

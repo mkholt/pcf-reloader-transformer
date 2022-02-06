@@ -30,7 +30,7 @@ import {
  *     state: state,
  *     container: container
  * };
- * _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
+ * _pcfReloadLib.connect("http://localhost:8181", _pcfReloaderParams);
  * ...existing code...
  * ```
  * 
@@ -68,7 +68,7 @@ const getNamesFromParameters = (params: NodeArray<ParameterDeclaration>) =>
  *     state: state,
  *     container: container
  * };
- * _pcfReloadLib.connect(this, "http://localhost:8181", _pcfReloaderParams);
+ * _pcfReloadLib.connect("http://localhost:8181", _pcfReloaderParams);
  * ...existing code...
  * ```
  * 
@@ -97,8 +97,7 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 		: "ws://127.0.0.1:8181/ws"
 
 	const declareObj = declareConst(paramsName, paramObj)
-	const callInit = callLib("connect",
-		factory.createThis(),
+	const callInit = callLib("doConnect",
 		factory.createStringLiteral(opts.wsAddress ?? defaultAddress),
 		paramsName)
 
@@ -123,7 +122,7 @@ function createUpdateViewBody(existingBody: NodeArray<Statement>, params: NodeAr
 	if (names.length < 1) return
 
 	const block = factory.createBlock([
-		stmt(callLib("updateContext", names[0])),
+		stmt(callLib("onUpdateContext", names[0])),
 		...existingBody
 	], true)
 

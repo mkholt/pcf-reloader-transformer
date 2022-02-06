@@ -17,8 +17,7 @@ import {
 export type ParamName = keyof inject.ReloadParams
 export type MethodName = keyof typeof inject
 
-export const requireVarName = "_pcfReloadLib"
-const injectLibName = id(requireVarName)
+const injectLibName = id("_pcfReloadLib")
 
 export const createLibraryImport = () =>
 	factory.createImportDeclaration(
