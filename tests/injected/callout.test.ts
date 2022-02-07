@@ -235,7 +235,7 @@ describe('updated code calls callout functions', () => {
 		jest.clearAllMocks()
 	})
 
-	it.each([true,false])("calls constructor when hasParams [$hasParams]", (hasParams: boolean) => {
+	it.each([true,false])("calls constructor when hasParams [%p]", (hasParams: boolean) => {
 		jest.isolateModules(() => {
 			(injectMock.hasParams as jest.Mock<unknown,unknown[]>).mockReturnValueOnce(hasParams)
 

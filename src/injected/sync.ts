@@ -56,9 +56,11 @@ const bsConnect = (baseUrl: string, debug?: boolean) => {
 
 const wsConnect = (address: string, debug?: boolean) => {
 	_websocket = new WebSocket(address)
-	_websocket.onmessage = (msg) => {
+	_websocket.onmessage = (msg: MessageEvent<string>) => {
 		if (msg.data !== "reload" && msg.data !== "refreshcss") {
-			if (debug) log("> " + JSON.stringify(msg))
+			if (debug) {
+				log("> " + msg.data)
+			}
 			return
 		}
 		
@@ -88,4 +90,6 @@ export const doDisconnect = () => {
 		_websocket.onmessage = null;
 		_websocket.close();
 	}
+
+	log("Live reload disabled")
 }
