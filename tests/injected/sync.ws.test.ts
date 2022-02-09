@@ -86,21 +86,3 @@ describe("sync integration (ws)", () => {
 		doConnect(wsAddr, mock<ReloadParams>(), true)
 	})
 })
-
-describe("sync integration (bs)", () => {
-	it("can connect", () => {
-		// TODO
-	})
-
-	it("can disconnect", () => {
-		// TODO
-	})
-
-	it("calls reload", () => {
-		// TODO
-	})
-
-	it("logs messages", () => {
-		// TODO
-	})
-})
