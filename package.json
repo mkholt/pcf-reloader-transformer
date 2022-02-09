@@ -1,7 +1,7 @@
 {
   "name": "pcf-reloader-transformer",
-  "version": "1.0.1",
-  "description": "Automatic refreshing of PCF components when embedded on a model-driven APP in Dynamics365",
+  "version": "1.1.0",
+  "description": "Automatic refreshing of PCF components when embedded on a model-driven App in Dynamics365",
   "main": "dist/index.js",
   "scripts": {
     "presample": "npm run build",
