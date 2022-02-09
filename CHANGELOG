@@ -1,5 +1,6 @@
-1.x (20??/??/??)
-- Move reload logic to own method
+1.1.1 (2022/02/09)
+- Support for Browser-Sync based communication (since pcf-start 1.11.4)
+- Major refactoring, move injected code to external library that gets imported into the class instead of embedding all the code.
 
 1.0.1 (2021/11/05)
 - Fix: Skip files that have the PcfParams type declared to avoid double-generating code. (Issue #1)

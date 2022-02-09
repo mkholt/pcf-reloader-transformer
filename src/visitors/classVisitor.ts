@@ -1,30 +1,40 @@
-import { isConstructorDeclaration, isMethodDeclaration, Node, factory } from "typescript"
-import { createConstructorBody } from "../lib/constructor"
-import { handleMethod } from "../lib/methodUpdates"
+import {
+	factory,
+	isConstructorDeclaration,
+	isMethodDeclaration,
+	Node,
+} from "typescript";
 
-export const classVisitor = (node: Node): Node | Node[] => {
-	if (isConstructorDeclaration(node)) {
-		const block = createConstructorBody(node)
-		return factory.updateConstructorDeclaration(node, node.decorators, node.modifiers, node.parameters, block)
-	}
+import {
+	createConstructorBody,
+	handleMethod,
+} from "../builders";
+import { IPluginConfig } from "../pluginConfig";
 
-	if (isMethodDeclaration(node)) {
-		const functionBody = handleMethod(node)
-		if (functionBody) {
-			return factory.updateMethodDeclaration(
-				node,
-				node.decorators,
-				node.modifiers,
-				node.asteriskToken,
-				node.name,
-				node.questionToken,
-				node.typeParameters,
-				node.parameters,
-				node.type,
-				functionBody
-			)
+export const classVisitor = (opts: IPluginConfig) =>
+	(node: Node): Node | Node[] => {
+		if (isConstructorDeclaration(node)) {
+			const block = createConstructorBody(node)
+			return factory.updateConstructorDeclaration(node, node.decorators, node.modifiers, node.parameters, block)
 		}
-	}
 
-	return node
-}
+		if (isMethodDeclaration(node)) {
+			const functionBody = handleMethod(node, opts)
+			if (functionBody) {
+				return factory.updateMethodDeclaration(
+					node,
+					node.decorators,
+					node.modifiers,
+					node.asteriskToken,
+					node.name,
+					node.questionToken,
+					node.typeParameters,
+					node.parameters,
+					node.type,
+					functionBody
+				)
+			}
+		}
+
+		return node
+	}

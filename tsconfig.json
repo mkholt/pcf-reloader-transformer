@@ -10,8 +10,12 @@
 		"noFallthroughCasesInSwitch": true,
 		"outDir": "./dist",
 		"rootDir": "./src",
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"typeRoots": [
+			"./node_modules/@types",
+			"./types"
+		]
 	},
-	"include": [ "src" ],
-  	"exclude": [ "samples" ],
+	"include": [ "src", "types" ],
+	"exclude": [ "samples" ],
 }

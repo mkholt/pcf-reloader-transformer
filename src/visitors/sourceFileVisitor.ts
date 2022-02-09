@@ -1,28 +1,53 @@
-import { factory, forEachChild, isClassDeclaration, Node, SourceFile, SyntaxKind, TransformationContext, visitEachChild } from "typescript"
-import { IPluginConfig } from ".."
-import { createConstructorCall, createConstructorDeclaration } from "../lib/constructor"
-import { createCurrentScriptAssignment } from "../lib/currentScript"
-import { createListenerMethod } from "../lib/listener"
-import { createParamsType } from "../lib/paramsType"
-import { createRefreshMethod } from "../lib/refresher"
-import { createAndDeclareWindowInterface } from "../lib/windowExtensions"
-import { classVisitor } from "./classVisitor"
-import { constructorVisitor } from "./constructorVisitor"
+import ts, {
+	factory,
+	forEachChild,
+	isClassDeclaration,
+	Node,
+	SourceFile,
+	SyntaxKind,
+	TransformationContext,
+	visitEachChild,
+} from "typescript";
+
+import {
+	createConstructorCall,
+	createConstructorDeclaration,
+	createCurrentScriptAssignment,
+	createLibraryImport,
+} from "../builders";
+import { IPluginConfig } from "../pluginConfig";
+import {
+	classVisitor,
+	constructorVisitor,
+} from "./";
+
+type hasName = {
+	name: Exclude<ts.ClassDeclaration['name'], undefined>
+}
+const isValidNode = (node: Node): node is ts.ClassDeclaration & hasName => {
+	// Check: Not a class, skip it
+	if (!isClassDeclaration(node)) return false
+
+	// Check: Implements ComponentFramework.StandardControl
+	const implement = node.heritageClauses?.filter(h => h.token == SyntaxKind.ImplementsKeyword
+		&& h.types.find(t => t.getText() === "ComponentFramework.StandardControl<IInputs, IOutputs>"))
+
+	if (!implement?.length) return false
+
+	// Check: Has class name so we can construct meaninfully
+	const className = node.name
+	if (!className) return false
+
+	return true
+}
 
 export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) =>
 	(node: Node): Node[] | Node => {
-		// Check: Not a class, skip it
-		if (!isClassDeclaration(node)) return node
+		if (!isValidNode(node)) {
+			return node
+		}
 
-		// Check: Implements ComponentFramework.StandardControl
-		const implement = node.heritageClauses?.filter(h => h.token == SyntaxKind.ImplementsKeyword
-			&& h.types.find(t => t.getText() === "ComponentFramework.StandardControl<IInputs, IOutputs>"))
-
-		if (!implement?.length) return node
-
-		// Check: Has class name so we can construct meaninfully
 		const className = node.name
-		if (!className) return node
 
 		if (opts.verbose) {
 			const fileName = sourceFile.fileName
@@ -32,18 +57,12 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>
 
-		// Generate constructor for after class declaration
-		const constructorDeclaration = createConstructorCall(className)
+		// Build the library import
+		//const useBrowserSync = opts.useBrowserSync ?? true
+		const importDecl = createLibraryImport()
 
+		// Assign currentScript variable
 		const scriptAssignment = createCurrentScriptAssignment()
-
-		const typeDef = createParamsType()
-
-		const windowDeclaration = createAndDeclareWindowInterface()
-
-		const { listener: listenMethod, socketVarDecl } = createListenerMethod(opts.wsAddress)
-
-		const refreshMethod = createRefreshMethod()
 
 		// Check if the class has a constructor to hook into
 		const foundConstructor = forEachChild(node, constructorVisitor)
@@ -54,8 +73,16 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			: undefined
 
 		// We want the class declaration as well, with modified methods
-		const classDeclaration = visitEachChild(node, classVisitor, ctx)
+		const classDeclaration = visitEachChild(node, classVisitor(opts), ctx)
 
+		// Update the detected class with the new statements
+		const classMembers = [
+			...classDeclaration.members,
+			...(constructor ? [constructor] : []),
+			//refreshMethod
+		]
+
+		// Build the class from the updated members
 		const newClass = factory.updateClassDeclaration(
 			classDeclaration,
 			classDeclaration.decorators,
@@ -63,18 +90,15 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			classDeclaration.name,
 			classDeclaration.typeParameters,
 			classDeclaration.heritageClauses,
-			[
-				...classDeclaration.members,
-				...(constructor ? [constructor] : []),
-				socketVarDecl,
-				listenMethod,
-				refreshMethod
-			]
+			classMembers
 		)
 
+		// Generate constructor for after class declaration
+		const constructorDeclaration = createConstructorCall(className)
+
+		// Return the updated source
 		return [
-			typeDef,
-			...windowDeclaration,
+			importDecl,
 			scriptAssignment,
 			newClass,
 			constructorDeclaration

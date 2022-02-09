@@ -1,64 +1,89 @@
-import { factory, MethodDeclaration } from "typescript"
-import { print } from "./utils/common"
-import * as m from "../src/lib/methodUpdates"
-import { buildClass, extractMethod } from "./utils/codeGeneration"
+import {
+	factory,
+	MethodDeclaration,
+} from "typescript";
 
-it.each`
+import * as m from "../src/builders/methodUpdates";
+import {
+	buildClass,
+	extractMethod,
+} from "./utils/codeGeneration";
+import {
+	isDefined,
+	print,
+} from "./utils/common";
+
+const initBodyInner = 'const _pcfReloaderParams = { context: param0, notifyOutputChanged: param1, state: param2, container: param3 }; _pcfReloadLib.doConnect("http://localhost:8181", _pcfReloaderParams);'
+const initBody = (oldBody: string) => `init(param0, param1, param2, param3) { ${initBodyInner}${oldBody} }`
+const updateBody = (oldBody: string) => `updateView(context: ComponentFramework.Context<IInputs>) { _pcfReloadLib.onUpdateContext(context);${oldBody} }`
+
+const parms = (count: number) => Array.from(Array(count).keys()).map((_, i) => 'param' + i).join(", ")
+
+describe('method updates', () => {
+	it.each`
 	body					| description
 	${"{}"}					| ${"empty"}
 	${"{ console.log(); }"}	| ${"existing"}
 	${""}					| ${"undefined"}
-`("init method, body is $description", ({body, description: _description}: {body: string, description: string}) => {
-	const { method } = extractMethod(buildClass(`init(param0, param1, param2, param3) ${body}`))
-	if (!method) expect(method).toBeDefined()
-	const source = handleMethodInternal(method!)
+`("init method, body is $description", ({ body }: { body: string }) => {
+		const { method } = extractMethod(buildClass(`init(param0, param1, param2, param3) ${body}`))
+		isDefined(method)
+		const source = handleMethodInternal(method)
 
-	const normalized = body.replace("{", "").replace("}", "").trim()
-	const oldBody = normalized.length ? " " + normalized : ""
-	expect(source).toBe(`init(param0, param1, param2, param3) { this.listenToWSUpdates({ context: param0, notifyOutputChanged: param1, state: param2, container: param3 });${oldBody} }`)
-})
+		const normalized = body.replace("{", "").replace("}", "").trim()
+		const oldBody = normalized.length ? " " + normalized : ""
 
-test('updateView body is built', () => {
-	const { method } = extractMethod(buildClass("public updateView(context: ComponentFramework.Context<IInputs>): void { this._container.innerHTML = \"<div>Hello, world!</div>\" }"))
-	if (!method) expect(method).toBeDefined()
-	const source = handleMethodInternal(method!)
+		expect(source).toBe(initBody(oldBody))
+	})
 
-	// For some reason the printer doesn't print strings
-	expect(source).toBe("public updateView(context: ComponentFramework.Context<IInputs>): void { if (window.pcfReloadParams) window.pcfReloadParams.context = context; this._container.innerHTML = ; }")
-})
+	it.each`
+	body					| description
+	${"{}"}					| ${"empty"}
+	${"{ console.log(); }"}	| ${"existing"}
+	${""}					| ${"undefined"}
+	`("updateView body is $description", ({ body }: { body: string }) => {
+		const { method } = extractMethod(buildClass(`updateView(context: ComponentFramework.Context<IInputs>) ${body}`))
+		isDefined(method)
+		const source = handleMethodInternal(method)
 
-test.each`
+		const normalized = body.replace("{", "").replace("}", "").trim()
+		const oldBody = normalized.length ? " " + normalized : ""
+
+		expect(source).toBe(updateBody(oldBody))
+	})
+
+	test.each`
 	func			| count
 	${"init"}		| ${4}
 	${"updateView"}	| ${1}
-`('$func not touched with wrong parameter count (!= $count)', ({func, count}) => {
-	const parms = Array.from(Array(count - 1).keys()).map((_, i) => 'param' + i).join(", ")
-	const { method } = extractMethod(buildClass(`${func}(${parms}) { }`))
-	if (!method) expect(method).toBeDefined()
-	const node = m.handleMethod(method!)
+	`('$func not touched with too few parameter count (!= $count)', ({ func, count }) => {
+		const { method } = extractMethod(buildClass(`${func}(${parms(count - 1)}) { }`))
+		isDefined(method)
+		const node = m.handleMethod(method, {})
 
-	expect(node).toBeUndefined()
-})
+		expect(node).toBeUndefined()
+	})
 
-test.each`
-	func			| count
-	${"init"}		| ${4}
-	${"updateView"}	| ${1}
-`('$func not touched with wrong parameter name', ({ func, count }) => {
-	const parms = Array.from(Array(count).keys()).map((_, i) => `{ param${i} }`).join(", ")
-	console.log(parms)
-	const { method } = extractMethod(buildClass(`${func}(${parms}) { }`))
+	test.each`
+	func			| count | inner
+	${"init"}		| ${4}	| ${initBodyInner}
+	${"updateView"}	| ${1}	| ${"_pcfReloadLib.onUpdateContext(param0);"}
+	`('$func updated with too many parameters (!= $count)', ({ func, count, inner }) => {
+		const p = parms(count + 1)
+		const classDef = buildClass(`${func}(${p}) { }`)
+		const { method } = extractMethod(classDef)
+		isDefined(method)
 
-	if (!method) expect(method).toBeDefined()
-	const node = m.handleMethod(method!)
+		const source = handleMethodInternal(method)
 
-	expect(node).toBeUndefined()
+		expect(source).toBe(`${func}(${p}) { ${inner} }`)
+	})
 })
 
 function handleMethodInternal(method: MethodDeclaration) {
-	const node = m.handleMethod(method!)
-	expect(node).toBeDefined()
-	
+	const node = m.handleMethod(method, {})
+	isDefined(node)
+
 	const methodDecl = factory.updateMethodDeclaration(method,
 		method.decorators,
 		method.modifiers,
