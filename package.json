@@ -1,15 +1,17 @@
 {
   "name": "pcf-reloader-transformer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Automatic refreshing of PCF components when embedded on a model-driven App in Dynamics365",
   "main": "dist/index.js",
   "scripts": {
     "presample": "npm run build",
     "sample": "tsc -p samples/tsconfig.json",
     "build": "tsc -p tsconfig.json",
-    "prepare": "ts-patch i && npm run build",
     "test": "jest",
-    "lint": "eslint src/ tests/"
+    "lint": "eslint src/ tests/",
+    "clean": "rimraf dist",
+    "prepare": "npm run clean && npm run build",
+    "postinstall": "ts-patch i"
   },
   "files": [
     "dist"
@@ -47,14 +49,18 @@
     "jest": "^27.3.1",
     "jest-mock-extended": "^2.0.4",
     "mock-socket": "^9.1.2",
+    "rimraf": "^3.0.2",
     "socket.io": "^4.4.1",
     "ts-jest": "^27.0.7",
     "ts-node": "^10.4.0",
-    "ts-patch": "^1.4.5",
     "typescript": "^4.5.5",
     "wait-for-expect": "^3.0.2"
   },
   "dependencies": {
+    "ts-patch": "^1.4.5",
     "socket.io-client": "^2.4.0"
+  },
+  "peerDependencies": {
+    "typescript": ">= 4.0"
   }
 }

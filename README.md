@@ -2,6 +2,9 @@
 [![npm](https://img.shields.io/npm/v/pcf-reloader-transformer)](https://www.npmjs.com/package/pcf-reloader-transformer)
 [![build](https://github.com/mkholt/pcf-reloader-transformer/actions/workflows/ci.yml/badge.svg)](https://github.com/mkholt/pcf-reloader-transformer/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/mkholt/pcf-reloader-transformer/badge.svg?branch=main)](https://coveralls.io/github/mkholt/pcf-reloader-transformer?branch=main)
+![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/pcf-reloader-transformer)
+![npm](https://img.shields.io/npm/dw/pcf-reloader-transformer)
+![NPM](https://img.shields.io/npm/l/pcf-reloader-transformer)
 
 Typescript transformation that enabled automatic reloading of PCF Components when embedded on Model-Driven forms in Dynamics 365.
 
@@ -29,7 +32,7 @@ However, having to fully reload the form on each change quickly gets annoying. T
 
 ## Installation
 ```sh
-$ npm i -D pcf-reloader-transformer
+$ npm install -D pcf-reloader-transformer
 ```
 
 ## Usage
@@ -40,18 +43,20 @@ The generated code can be found in [./samples/patched.ts](./samples/patched.ts) 
 ### Running the transformer
 The easiest way of running the transformer is through [ts-patch](https://www.npmjs.com/package/ts-patch).
 
+TS Patch is automatically installed when installing this package.
+
 To run the transformer, add it to _plugins_ in your _tsconfig.json_
 ```json
 {
-	"compilerOptions": {
-		"plugins": [
-			{
-				"transform": "pcf-reloader-transformer",
-				"type": "config",
-				"printGenerated": true
-			}
-		]
-	}
+  "compilerOptions": {
+    "plugins": [
+      {
+        "transform": "pcf-reloader-transformer",
+        "type": "config",
+        "printGenerated": true
+      }
+    ]
+  }
 }
 ```
 
@@ -60,7 +65,7 @@ The transformation injects code in any class that implements `ComponentFramework
 
 The code will listen for messages passed to the [PCF Test Harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness), unload the PCF, reload the `bundle.js`, and re-initialize the PCF with the current context.
 
-The code expects the [PCF test harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness) to be running in watch-mode.
+The code expects the [PCF test harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness) to be running in watch-mode. Start in watch mode by calling `npm run start -- watch`.
 
 #### Fiddler
 The easiest way to get the updated bundle on the form is to inject it using Fiddler.
