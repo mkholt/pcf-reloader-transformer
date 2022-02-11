@@ -1,4 +1,7 @@
-1.1.1 (2022/02/09)
+1.1.1 (2022/xx/xx)
+- Move TS Patch to a dependency and auto-patch on install
+
+1.1.0 (2022/02/09)
 - Support for Browser-Sync based communication (since pcf-start 1.11.4)
 - Major refactoring, move injected code to external library that gets imported into the class instead of embedding all the code.
 
