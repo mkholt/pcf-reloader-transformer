@@ -88,4 +88,4 @@ The settings are specified as part of the plugin specification in _tsconfig.json
 | printGenerated	| boolean	| If `true`, the generated typescript code will be output to a file alongside the detected file. If the file is named `index.ts`, the generated file will be `index.generated.ts`	| `false`
 | verbose			| boolean	| If `true`, status messages will be printed during the transformation	| `false`
 | wsAddress			| string	| The address to use when listening for update messages.				| For websocket: `ws://127.0.0.1:8181/ws`<br> For BrowserSync: `http://localhost:8181`
-| useBrowserSync	| boolean	| If `true` use the BrowserSync.io / Socket.io based integration, otherwise use a raw websocket<br>Use BrowserSync when running against PCF Start > 1.11	| `true`
+| useBrowserSync	| boolean	| If `true` force use of the BrowserSync.io / Socket.io based integration,<br> If `false`, force use of the WebSocket,<br> If not specified, detect the protocol based on the [PCF Start](https://www.npmjs.com/package/pcf-start) version	| `true` when PCF Start version >= 1.11.3
