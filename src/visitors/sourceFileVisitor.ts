@@ -15,6 +15,7 @@ import {
 	createCurrentScriptAssignment,
 	createLibraryImport,
 } from "../builders";
+import { log } from "../injected/logger";
 import { IPluginConfig } from "../pluginConfig";
 import {
 	classVisitor,
@@ -52,7 +53,7 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 		if (opts.verbose) {
 			const fileName = sourceFile.fileName
 			const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-			console.log(`Found class: ${className.getText()} in ${fileName}:${pos.line + 1}`)
+			log(`Found class: ${className.getText()} in ${fileName}:${pos.line + 1}`)
 		}
 
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>

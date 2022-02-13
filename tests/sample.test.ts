@@ -3,18 +3,20 @@ import path from "path";
 import ts from "typescript";
 
 import transformer from "../src/index";
+import { log } from "../src/injected";
 import { IPluginConfig } from "../src/pluginConfig";
 import { readFile } from "./utils/common";
 
 const writeFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation().mockName("fs.writeFileSync")
-let messages: string[] = []
-const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation((m) => messages.push(m)).mockName("console.log")
+
+jest.mock('../src/injected/logger', () => ({
+	log: jest.fn().mockName("logger.log")
+}))
 
 describe('full sample compile', () => {
 	beforeEach(() => {
-		// Reset the spys
+		// Reset the spys and mocks
 		jest.clearAllMocks()
-		messages = []
 	})
 
 	test.each([
@@ -71,8 +73,8 @@ describe('full sample compile', () => {
 
 		const seps = filePath.replace(/\\/g, "/")
 		const np = path.resolve(path.dirname(filePath), 'index.generated.ts')
-		expect(consoleLogSpy).toHaveBeenCalledWith(`Found class: SampleComponent in ${seps}:3`)
-		expect(consoleLogSpy).toHaveBeenCalledWith(`Generated file written to: ${np}`)
+		expect(log).toHaveBeenCalledWith(`Found class: SampleComponent in ${seps}:3`)
+		expect(log).toHaveBeenCalledWith(`Generated file written to: ${np}`)
 	})
 
 	it('prints warning when skipping certain files', () => {
@@ -89,7 +91,7 @@ describe('full sample compile', () => {
 		})
 
 		const replaced = filePath.replace(/\\/g, "/")
-		expect(consoleLogSpy).toHaveBeenCalledWith(`PCF Reloader already injected, skipping ${replaced}`)
+		expect(log).toHaveBeenCalledWith(`PCF Reloader already injected, skipping ${replaced}`)
 		expect(writeFileSpy).toHaveBeenCalledTimes(0)
 	})
 })
