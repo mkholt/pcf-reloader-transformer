@@ -5,7 +5,7 @@ import { log } from "./logger";
 
 type SocketIo = {
 	on: (eventName: string, callback: (...args: unknown[]) => void) => SocketIo
-	onevent: (packet: unknown) => void
+	onevent: (packet: { data?: unknown }) => void
 	close: () => SocketIo
 }
 
@@ -25,7 +25,6 @@ declare const window: PcfReloaderWindow
 let _socket: SocketIo|null
 let _websocket: WebSocket|null
 
-const hasData = (o: unknown): o is { data: unknown } => !!(o as { data: unknown })?.data
 const bsConnect = (baseUrl: string, debug?: boolean) => {
 	const socketConfig = {
 		"reconnectionAttempts": 50,
@@ -43,11 +42,10 @@ const bsConnect = (baseUrl: string, debug?: boolean) => {
 
 	if (debug) {
 		const onEvent = _socket.onevent
-		_socket.onevent = function(packet: unknown) {
+		_socket.onevent = function(packet) {
 			onEvent.call(this, packet);
 
-			if (hasData(packet))
-				log("> " + JSON.stringify(packet.data))
+			log("> " + JSON.stringify(packet.data))
 		};
 	}
 

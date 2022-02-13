@@ -4,6 +4,7 @@ import {
 } from "typescript";
 
 import * as m from "../src/builders/methodUpdates";
+import { IPluginConfig } from "../src/pluginConfig";
 import {
 	buildClass,
 	extractMethod,
@@ -78,10 +79,43 @@ describe('method updates', () => {
 
 		expect(source).toBe(`${func}(${p}) { ${inner} }`)
 	})
+
+	test.each`
+	useBrowserSync | wsAddress                    | expected                     | description
+	${undefined}   | ${undefined}                 | ${"http://localhost:8181"}   | ${"Defaults to BS on localhost"}
+	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"Can override address on BS"}
+	${true}        | ${undefined}                 | ${"http://localhost:8181"}   | ${"BS: Defaults to localhost"}
+	${true}        | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"BS: Can override address"}
+	${false}       | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"WS: Defaults to localhost"}
+	${false}       | ${"ws://0.0.0.0:8080"}       | ${"ws://0.0.0.0:8080"}       | ${"WS: Can override address"}
+	`('doConnect call, $description', ({ useBrowserSync, wsAddress, expected }) => {
+		const p = parms(4)
+		const classDef = buildClass(`init(${p}) {}`)
+		const { method } = extractMethod(classDef)
+		isDefined(method)
+
+		const opts: IPluginConfig = {
+			useBrowserSync,
+			wsAddress
+		}
+
+		const source = handleMethodInternal(method, opts)
+		
+		expect(source).toBe(`init(${p}) { const _pcfReloaderParams = { context: param0, notifyOutputChanged: param1, state: param2, container: param3 }; _pcfReloadLib.doConnect("${expected}", _pcfReloaderParams); }`)
+	})
+
+	test('handleMethod returns undefined on unknown method', () => {
+		const classDef = buildClass(`someMethod() {}`)
+		const { method } = extractMethod(classDef)
+		isDefined(method)
+
+		const node = m.handleMethod(method, {})
+		expect(node).toBeUndefined()
+	})
 })
 
-function handleMethodInternal(method: MethodDeclaration) {
-	const node = m.handleMethod(method, {})
+function handleMethodInternal(method: MethodDeclaration, opts?: IPluginConfig) {
+	const node = m.handleMethod(method, opts ?? {})
 	isDefined(node)
 
 	const methodDecl = factory.updateMethodDeclaration(method,
