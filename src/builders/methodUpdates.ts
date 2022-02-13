@@ -15,6 +15,10 @@ import {
 } from "../lib";
 import { IPluginConfig } from "../pluginConfig";
 import {
+	getProtocol,
+	Protocol,
+} from "../version";
+import {
 	callLib,
 	ParamName,
 } from "./";
@@ -92,7 +96,9 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 
 	const paramsName = id("_pcfReloaderParams")
 
-	const defaultAddress = opts.useBrowserSync ?? true
+	const protocol = calculateProtocol(opts)
+
+	const defaultAddress = protocol == "BrowserSync"
 		? "http://localhost:8181"
 		: "ws://127.0.0.1:8181/ws"
 
@@ -108,6 +114,12 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 	], true)
 
 	return block
+}
+
+function calculateProtocol(opts: IPluginConfig): Protocol {
+	const defaultProtocol = getProtocol()
+	if (opts.useBrowserSync === undefined) return defaultProtocol
+	return opts.useBrowserSync ? 'BrowserSync' : 'WebSocket'
 }
 
 /**

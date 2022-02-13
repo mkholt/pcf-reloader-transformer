@@ -6,6 +6,10 @@ import {
 import * as m from "../src/builders/methodUpdates";
 import { IPluginConfig } from "../src/pluginConfig";
 import {
+	getProtocol,
+	Protocol,
+} from "../src/version";
+import {
 	buildClass,
 	extractMethod,
 } from "./utils/codeGeneration";
@@ -20,7 +24,14 @@ const updateBody = (oldBody: string) => `updateView(context: ComponentFramework.
 
 const parms = (count: number) => Array.from(Array(count).keys()).map((_, i) => 'param' + i).join(", ")
 
+jest.mock('../src/version', () => ({ getProtocol: jest.fn<Protocol,never[]>().mockName("getProtocol") }))
+
 describe('method updates', () => {
+	beforeEach(() => {
+		jest.clearAllMocks();
+		(getProtocol as jest.Mock<Protocol,never[]>).mockReturnValue('BrowserSync')
+	})
+
 	it.each`
 	body					| description
 	${"{}"}					| ${"empty"}
@@ -80,15 +91,27 @@ describe('method updates', () => {
 		expect(source).toBe(`${func}(${p}) { ${inner} }`)
 	})
 
+	type TestTuple = {
+		useBrowserSync: boolean|undefined
+		wsAddress: string|undefined
+		expected: string
+		protocol: Protocol
+		description: string
+	}
 	test.each`
-	useBrowserSync | wsAddress                    | expected                     | description
-	${undefined}   | ${undefined}                 | ${"http://localhost:8181"}   | ${"Defaults to BS on localhost"}
-	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"Can override address on BS"}
-	${true}        | ${undefined}                 | ${"http://localhost:8181"}   | ${"BS: Defaults to localhost"}
-	${true}        | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"BS: Can override address"}
-	${false}       | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"WS: Defaults to localhost"}
-	${false}       | ${"ws://0.0.0.0:8080"}       | ${"ws://0.0.0.0:8080"}       | ${"WS: Can override address"}
-	`('doConnect call, $description', ({ useBrowserSync, wsAddress, expected }) => {
+	useBrowserSync | wsAddress                    | expected                     | protocol         | description
+	${undefined}   | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"WebSocket"}   | ${"Protocol used if not specified (WS)"}
+	${undefined}   | ${undefined}                 | ${"http://localhost:8181"}   | ${"BrowserSync"} | ${"Protocol used if not specified (BS)"}
+	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"BrowserSync"} | ${"Can override address on BS"}
+	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"WebSocket"}   | ${"WS address takes precedence"}
+	${true}        | ${undefined}                 | ${"http://localhost:8181"}   | ${"WebSocket"}   | ${"BS: Defaults to localhost"}
+	${true}        | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"WebSocket"}   | ${"BS: Can override address"}
+	${false}       | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"BrowserSync"} | ${"WS: Defaults to localhost"}
+	${false}       | ${"ws://0.0.0.0:8080"}       | ${"ws://0.0.0.0:8080"}       | ${"BrowserSync"} | ${"WS: Can override address"}
+
+	`('doConnect call, $description [$protocol]', ({ useBrowserSync, wsAddress, expected, protocol }: TestTuple) => {
+		(getProtocol as jest.Mock<Protocol,never[]>).mockReturnValueOnce(protocol)
+		
 		const p = parms(4)
 		const classDef = buildClass(`init(${p}) {}`)
 		const { method } = extractMethod(classDef)
