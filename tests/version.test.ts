@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 describe('version to protocol mapping', () => {
 	beforeEach(() => {
 		jest.resetModules()
@@ -18,12 +19,14 @@ describe('version to protocol mapping', () => {
 	${"1.11.4"}  | ${"BrowserSync"}
 	${"1.11.8"}  | ${"BrowserSync"}
 	`('returns the right protocol ($version -> $protocol)', ({ version, protocol }) => {
+		jest.mock('../src/injected/logger', () => ({ log: jest.fn().mockName("logger.log") }))
 		jest.mock('pcf-start/package.json', () => ({ version }))
 
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const p = require("../src/version")
+		const l = require("../src/injected/logger")
 		
-		const proto = p.getProtocol()
+		const proto = p.getProtocol({ verbose: true })
 		expect(proto).toBe(protocol)
+		expect(l.log).toBeCalledWith("Detected PCF Start version", version)
 	})
 })

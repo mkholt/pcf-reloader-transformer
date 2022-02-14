@@ -8,6 +8,7 @@ import {
 	Statement,
 } from "typescript";
 
+import { log } from "../injected/logger";
 import {
 	declareConst,
 	id,
@@ -97,6 +98,7 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 	const paramsName = id("_pcfReloaderParams")
 
 	const protocol = calculateProtocol(opts)
+	if (opts.verbose) log("Using protocol:", protocol)
 
 	const defaultAddress = protocol == "BrowserSync"
 		? "http://localhost:8181"
@@ -117,7 +119,8 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 }
 
 function calculateProtocol(opts: IPluginConfig): Protocol {
-	const defaultProtocol = getProtocol()
+	const defaultProtocol = getProtocol(opts)
+	if (opts.verbose) log("Detected protocol:", defaultProtocol)
 	if (opts.useBrowserSync === undefined) return defaultProtocol
 	return opts.useBrowserSync ? 'BrowserSync' : 'WebSocket'
 }

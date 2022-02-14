@@ -4,6 +4,7 @@ import {
 } from "typescript";
 
 import * as m from "../src/builders/methodUpdates";
+import { log } from "../src/injected/logger";
 import { IPluginConfig } from "../src/pluginConfig";
 import {
 	getProtocol,
@@ -25,11 +26,12 @@ const updateBody = (oldBody: string) => `updateView(context: ComponentFramework.
 const parms = (count: number) => Array.from(Array(count).keys()).map((_, i) => 'param' + i).join(", ")
 
 jest.mock('../src/version', () => ({ getProtocol: jest.fn<Protocol,never[]>().mockName("getProtocol") }))
+jest.mock('../src/injected/logger', () => ({ log: jest.fn().mockName("logger.log") }))
 
 describe('method updates', () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
-		(getProtocol as jest.Mock<Protocol,never[]>).mockReturnValue('BrowserSync')
+		(getProtocol as jest.Mock<Protocol,[IPluginConfig]>).mockReturnValue('BrowserSync')
 	})
 
 	it.each`
@@ -96,21 +98,22 @@ describe('method updates', () => {
 		wsAddress: string|undefined
 		expected: string
 		protocol: Protocol
+		using: Protocol
 		description: string
 	}
 	test.each`
-	useBrowserSync | wsAddress                    | expected                     | protocol         | description
-	${undefined}   | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"WebSocket"}   | ${"Protocol used if not specified (WS)"}
-	${undefined}   | ${undefined}                 | ${"http://localhost:8181"}   | ${"BrowserSync"} | ${"Protocol used if not specified (BS)"}
-	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"BrowserSync"} | ${"Can override address on BS"}
-	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"WebSocket"}   | ${"WS address takes precedence"}
-	${true}        | ${undefined}                 | ${"http://localhost:8181"}   | ${"WebSocket"}   | ${"BS: Defaults to localhost"}
-	${true}        | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"WebSocket"}   | ${"BS: Can override address"}
-	${false}       | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"BrowserSync"} | ${"WS: Defaults to localhost"}
-	${false}       | ${"ws://0.0.0.0:8080"}       | ${"ws://0.0.0.0:8080"}       | ${"BrowserSync"} | ${"WS: Can override address"}
+	useBrowserSync | wsAddress                    | expected                     | protocol         | using            | description
+	${undefined}   | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"WebSocket"}   | ${"WebSocket"}   | ${"Protocol used if not specified (WS)"}
+	${undefined}   | ${undefined}                 | ${"http://localhost:8181"}   | ${"BrowserSync"} | ${"BrowserSync"} | ${"Protocol used if not specified (BS)"}
+	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"BrowserSync"} | ${"BrowserSync"} | ${"Can override address on BS"}
+	${undefined}   | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"WebSocket"}   | ${"WebSocket"}   | ${"WS address takes precedence"}
+	${true}        | ${undefined}                 | ${"http://localhost:8181"}   | ${"WebSocket"}   | ${"BrowserSync"} | ${"BS: Defaults to localhost"}
+	${true}        | ${"http://example.tld:8080"} | ${"http://example.tld:8080"} | ${"WebSocket"}   | ${"BrowserSync"} | ${"BS: Can override address"}
+	${false}       | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"BrowserSync"} | ${"WebSocket"}   | ${"WS: Defaults to localhost"}
+	${false}       | ${"ws://0.0.0.0:8080"}       | ${"ws://0.0.0.0:8080"}       | ${"BrowserSync"} | ${"WebSocket"}   | ${"WS: Can override address"}
 
-	`('doConnect call, $description [$protocol]', ({ useBrowserSync, wsAddress, expected, protocol }: TestTuple) => {
-		(getProtocol as jest.Mock<Protocol,never[]>).mockReturnValueOnce(protocol)
+	`('doConnect call, $description [$protocol]', ({ useBrowserSync, wsAddress, expected, protocol, using }: TestTuple) => {
+		(getProtocol as jest.Mock<Protocol,IPluginConfig[]>).mockReturnValueOnce(protocol)
 		
 		const p = parms(4)
 		const classDef = buildClass(`init(${p}) {}`)
@@ -118,13 +121,16 @@ describe('method updates', () => {
 		isDefined(method)
 
 		const opts: IPluginConfig = {
-			useBrowserSync,
-			wsAddress
+			useBrowserSync: useBrowserSync,
+			wsAddress: wsAddress,
+			verbose: true
 		}
 
 		const source = handleMethodInternal(method, opts)
 		
 		expect(source).toBe(`init(${p}) { const _pcfReloaderParams = { context: param0, notifyOutputChanged: param1, state: param2, container: param3 }; _pcfReloadLib.doConnect("${expected}", _pcfReloaderParams); }`)
+		expect(log).toBeCalledWith("Detected protocol:", protocol)
+		expect(log).toBeCalledWith("Using protocol:", using)
 	})
 
 	test('handleMethod returns undefined on unknown method', () => {
