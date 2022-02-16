@@ -98,15 +98,16 @@ function createInitBody(existingBody: NodeArray<Statement>, params: NodeArray<Pa
 	const paramsName = id("_pcfReloaderParams")
 
 	const protocol = calculateProtocol(opts)
-	if (opts.verbose) log("Using protocol:", protocol)
 
 	const defaultAddress = protocol == "BrowserSync"
 		? "http://localhost:8181"
 		: "ws://127.0.0.1:8181/ws"
+	const address = opts.wsAddress ?? defaultAddress
+	if (opts.verbose) log("Using protocol:", protocol, "binding to:", address)
 
 	const declareObj = declareConst(paramsName, paramObj)
 	const callInit = callLib("doConnect",
-		factory.createStringLiteral(opts.wsAddress ?? defaultAddress),
+		factory.createStringLiteral(address),
 		paramsName)
 
 	const block = factory.createBlock([

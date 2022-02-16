@@ -112,7 +112,7 @@ describe('method updates', () => {
 	${false}       | ${undefined}                 | ${"ws://127.0.0.1:8181/ws"}  | ${"BrowserSync"} | ${"WebSocket"}   | ${"WS: Defaults to localhost"}
 	${false}       | ${"ws://0.0.0.0:8080"}       | ${"ws://0.0.0.0:8080"}       | ${"BrowserSync"} | ${"WebSocket"}   | ${"WS: Can override address"}
 
-	`('doConnect call, $description [$protocol]', ({ useBrowserSync, wsAddress, expected, protocol, using }: TestTuple) => {
+	`('doConnect call, $description [$protocol -> $using]', ({ useBrowserSync, wsAddress, expected, protocol, using }: TestTuple) => {
 		(getProtocol as jest.Mock<Protocol,IPluginConfig[]>).mockReturnValueOnce(protocol)
 		
 		const p = parms(4)
@@ -130,7 +130,7 @@ describe('method updates', () => {
 		
 		expect(source).toBe(`init(${p}) { const _pcfReloaderParams = { context: param0, notifyOutputChanged: param1, state: param2, container: param3 }; _pcfReloadLib.doConnect("${expected}", _pcfReloaderParams); }`)
 		expect(log).toBeCalledWith("Detected protocol:", protocol)
-		expect(log).toBeCalledWith("Using protocol:", using)
+		expect(log).toBeCalledWith("Using protocol:", using, "binding to:", expected)
 	})
 
 	test('handleMethod returns undefined on unknown method', () => {
