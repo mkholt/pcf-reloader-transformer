@@ -1,6 +1,7 @@
 import ts from "typescript";
 
 import { hasLibraryImport } from "./builders";
+import { log } from "./injected";
 import FilePrinter from "./lib/filePrinter";
 import { IPluginConfig } from "./pluginConfig";
 import { visitor } from "./visitors";
@@ -10,7 +11,7 @@ export default (opts: IPluginConfig) =>
 		(sourceFile: ts.SourceFile) => {
 			// Check: Source has import declaration, if yes, we back off
 			if (hasLibraryImport(sourceFile)) {
-				if (opts.verbose) console.log("PCF Reloader already injected, skipping " + sourceFile.fileName)
+				if (opts.verbose) log("PCF Reloader already injected, skipping " + sourceFile.fileName)
 				return sourceFile;
 			}
 

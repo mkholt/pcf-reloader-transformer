@@ -43,7 +43,7 @@ The generated code can be found in [./samples/patched.ts](./samples/patched.ts) 
 ### Running the transformer
 The easiest way of running the transformer is through [ts-patch](https://www.npmjs.com/package/ts-patch).
 
-TS Patch is automatically installed when installing this package.
+TS Patch is automatically installed and enabled when installing this package.
 
 To run the transformer, add it to _plugins_ in your _tsconfig.json_
 ```json
@@ -53,7 +53,6 @@ To run the transformer, add it to _plugins_ in your _tsconfig.json_
       {
         "transform": "pcf-reloader-transformer",
         "type": "config",
-        "printGenerated": true
       }
     ]
   }
@@ -65,7 +64,7 @@ The transformation injects code in any class that implements `ComponentFramework
 
 The code will listen for messages passed to the [PCF Test Harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness), unload the PCF, reload the `bundle.js`, and re-initialize the PCF with the current context.
 
-The code expects the [PCF test harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness) to be running in watch-mode. Start in watch mode by calling `npm run start -- watch`.
+The code expects the [PCF test harness](https://docs.microsoft.com/en-us/powerapps/developer/component-framework/debugging-custom-controls#debugging-using-the-browser-test-harness) to be running in watch-mode. Start in watch mode by calling `npm start watch`.
 
 #### Fiddler
 The easiest way to get the updated bundle on the form is to inject it using Fiddler.
@@ -88,4 +87,4 @@ The settings are specified as part of the plugin specification in _tsconfig.json
 | printGenerated	| boolean	| If `true`, the generated typescript code will be output to a file alongside the detected file. If the file is named `index.ts`, the generated file will be `index.generated.ts`	| `false`
 | verbose			| boolean	| If `true`, status messages will be printed during the transformation	| `false`
 | wsAddress			| string	| The address to use when listening for update messages.				| For websocket: `ws://127.0.0.1:8181/ws`<br> For BrowserSync: `http://localhost:8181`
-| useBrowserSync	| boolean	| If `true` use the BrowserSync.io / Socket.io based integration, otherwise use a raw websocket<br>Use BrowserSync when running against PCF Start > 1.11	| `true`
+| useBrowserSync	| boolean	| If `true` force use of the BrowserSync.io / Socket.io based integration,<br> If `false`, force use of the WebSocket,<br> If not specified, detect the protocol based on the [PCF Start](https://www.npmjs.com/package/pcf-start) version	| `true` when PCF Start version >= 1.11.3, `false` otherwise

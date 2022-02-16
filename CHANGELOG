@@ -1,5 +1,6 @@
 1.1.1 (2022/xx/xx)
 - Move TS Patch to a dependency and auto-patch on install
+- Auto-detect protocol based on installed PCF Start version
 
 1.1.0 (2022/02/09)
 - Support for Browser-Sync based communication (since pcf-start 1.11.4)

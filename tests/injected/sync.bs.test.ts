@@ -3,7 +3,10 @@ import {
 	Server as HttpServer,
 } from "http";
 import { mock } from "jest-mock-extended";
-import { Server as SocketIOServer } from "socket.io";
+import {
+	Namespace,
+	Server as SocketIOServer,
+} from "socket.io";
 import waitForExpect from "wait-for-expect";
 
 import { reloadComponent } from "../../src/injected/callouts";
@@ -27,6 +30,7 @@ describe("sync integration (bs)", () => {
 	let wsAddr: string
 	let httpServer: HttpServer
 	let io: SocketIOServer
+	let ns: Namespace
 
 	beforeAll(() => {
 		Object.defineProperty(global, "window", {
@@ -45,6 +49,9 @@ describe("sync integration (bs)", () => {
 			const addr = httpServer.address()
 			if (!addr || typeof addr == "string") throw Error("Unexpected address: " + addr)
 			wsAddr = "http://localhost:" + addr.port
+
+			ns = io.of("/browser-sync")
+
 			done()
 		})
 	})
@@ -56,7 +63,7 @@ describe("sync integration (bs)", () => {
 	})
 
 	it("can connect and disconnect", (done) => {
-		io.of("/browser-sync").on("connection", (socket) => {
+		ns.on("connection", (socket) => {
 			expect(log).toBeCalledWith("Live reload enabled on " + wsAddr + "/browser-sync")
 			waitForExpect(() => expect(log).toBeCalledWith("BrowserSync connected")).then(() => {
 				doDisconnect()
@@ -72,7 +79,7 @@ describe("sync integration (bs)", () => {
 	})
 
 	it("calls reload", (done) => {
-		io.of("/browser-sync").on("connection", (socket) => {
+		ns.on("connection", (socket) => {
 			socket.emit("browser:reload")
 
 			waitForExpect(() => expect(reloadComponent).toHaveBeenCalled()).then(() => {
@@ -86,7 +93,7 @@ describe("sync integration (bs)", () => {
 	})
 
 	it("does not call on invalid message", (done) => {
-		io.of("/browser-sync").on("connection", (socket) => {
+		ns.on("connection", (socket) => {
 			socket.emit("unknown:event")
 
 			waitForExpect(() => expect(log).toBeCalledWith("> [\"unknown:event\"]")).then(() => {

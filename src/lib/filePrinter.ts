@@ -8,6 +8,7 @@ import {
 	SourceFile,
 } from "typescript";
 
+import { log } from "../injected/logger";
 import { IPluginConfig } from "../pluginConfig";
 
 export const newPath = (fileName: string) => {
@@ -31,6 +32,6 @@ export default (sourceFile: SourceFile, updatedSource: SourceFile, opt: IPluginC
 	writeFileSync(generatedPath, generated)
 
 	if (opt.verbose) {
-		console.log("Generated file written to: " + generatedPath)
+		log("Generated file written to: " + generatedPath)
 	}
 }
