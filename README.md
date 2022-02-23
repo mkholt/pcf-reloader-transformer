@@ -33,6 +33,7 @@ However, having to fully reload the form on each change quickly gets annoying. T
 ## Installation
 ```sh
 $ npm install -D pcf-reloader-transformer
+$ npx ts-patch i
 ```
 
 ## Usage
