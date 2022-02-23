@@ -28,8 +28,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - run: npm --prefix samples ci
-    - run: npm run sample
+    - run: cd samples && npm samples ci && npm run build && cd ..
     - run: npm test
     
     - name: Coveralls
