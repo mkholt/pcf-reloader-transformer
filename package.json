@@ -10,8 +10,7 @@
     "test": "jest",
     "lint": "eslint src/ tests/",
     "clean": "rimraf dist",
-    "prepare": "npm run clean && npm run build",
-    "postinstall": "ts-patch i"
+    "prepare": "npm run clean && npm run build"
   },
   "files": [
     "dist"
