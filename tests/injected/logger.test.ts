@@ -21,14 +21,14 @@ describe('Run-time console logger', () => {
 	it("writes a test message", () => {
 		log("Test")
 
-		expect(consoleSpy).toHaveBeenCalledWith("[pcf-reloader]", "[01:02:03.456]", "Test")
-		expect(messages).toEqual(expect.arrayContaining(["[pcf-reloader] [01:02:03.456] Test"]))
+		expect(consoleSpy).toHaveBeenCalledWith("[01:02:03]", "[pcf-reloader]", "Test")
+		expect(messages).toEqual(expect.arrayContaining(["[01:02:03] [pcf-reloader] Test"]))
 	})
 
 	it("supports multiple messages", () => {
 		log("Test", "Multiple", "Messages")
 
-		expect(consoleSpy).toHaveBeenCalledWith("[pcf-reloader]", "[01:02:03.456]", "Test", "Multiple", "Messages")
-		expect(messages).toEqual(expect.arrayContaining(["[pcf-reloader] [01:02:03.456] Test Multiple Messages"]))
+		expect(consoleSpy).toHaveBeenCalledWith("[01:02:03]", "[pcf-reloader]", "Test", "Multiple", "Messages")
+		expect(messages).toEqual(expect.arrayContaining(["[01:02:03] [pcf-reloader] Test Multiple Messages"]))
 	})
 })

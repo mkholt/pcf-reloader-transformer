@@ -28,8 +28,7 @@ export const createLibraryImport = () =>
 			undefined,
 			factory.createNamespaceImport(injectLibName)
 		),
-		factory.createStringLiteral("pcf-reloader-transformer/dist/injected"),
-		undefined
+		factory.createStringLiteral("pcf-reloader-transformer/dist/injected")
 	)
 
 let _importSource: string|undefined
