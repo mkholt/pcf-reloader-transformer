@@ -1,26 +1,17 @@
 import ts, {
 	factory,
-	forEachChild,
 	isClassDeclaration,
 	Node,
 	SourceFile,
 	SyntaxKind,
 	TransformationContext,
-	visitEachChild,
 } from "typescript";
 
-import {
-	createConstructorCall,
-	createConstructorDeclaration,
-	createCurrentScriptAssignment,
-	createLibraryImport,
-} from "../builders";
+import { createLibraryImport } from "../builders";
+import { buildClass } from "../builders/injectorClass";
 import { log } from "../injected/logger";
+import { id } from "../lib";
 import { IPluginConfig } from "../pluginConfig";
-import {
-	classVisitor,
-	constructorVisitor,
-} from "./";
 
 type hasName = {
 	name: Exclude<ts.ClassDeclaration['name'], undefined>
@@ -59,49 +50,58 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>
 
 		// Build the library import
-		//const useBrowserSync = opts.useBrowserSync ?? true
 		const importDecl = createLibraryImport()
 
 		// Assign currentScript variable
-		const scriptAssignment = createCurrentScriptAssignment()
+		//const scriptAssignment = createCurrentScriptAssignment()
 
 		// Check if the class has a constructor to hook into
-		const foundConstructor = forEachChild(node, constructorVisitor)
+		//const foundConstructor = forEachChild(node, constructorVisitor)
 
 		// No constructor found, inject it
-		const constructor = (!foundConstructor)
+		/*const constructor = (!foundConstructor)
 			? createConstructorDeclaration()
-			: undefined
+			: undefined*/
 
 		// We want the class declaration as well, with modified methods
-		const classDeclaration = visitEachChild(node, classVisitor(opts), ctx)
+		//const classDeclaration = visitEachChild(node, classVisitor(opts), ctx)
 
 		// Update the detected class with the new statements
-		const classMembers = [
+		/*const classMembers = [
 			...classDeclaration.members,
 			...(constructor ? [constructor] : []),
 			//refreshMethod
-		]
+		]*/
+
+		// Rename the class by postfixing _reloaded
+		const newName = id(node.name.getText(sourceFile) + "_reloaded")
+
+		// Remove the export modifier from the class, we only want to export ourselves
+		const modifiers = node.modifiers?.filter(m => m.kind !== SyntaxKind.ExportKeyword)
 
 		// Build the class from the updated members
 		const newClass = factory.updateClassDeclaration(
-			classDeclaration,
-			classDeclaration.decorators,
-			classDeclaration.modifiers,
-			classDeclaration.name,
-			classDeclaration.typeParameters,
-			classDeclaration.heritageClauses,
-			classMembers
+			node,
+			node.decorators,
+			modifiers,
+			newName,
+			node.typeParameters,
+			node.heritageClauses,
+			node.members
 		)
 
+		// Build the injected class
+		const reloaderClass = buildClass(id(node.name.getText(sourceFile)), sourceFile.languageVersion, ctx)
+
 		// Generate constructor for after class declaration
-		const constructorDeclaration = createConstructorCall(className)
+		//const constructorDeclaration = createConstructorCall(className)
 
 		// Return the updated source
 		return [
 			importDecl,
-			scriptAssignment,
+			//scriptAssignment,
 			newClass,
-			constructorDeclaration
+			reloaderClass
+			//constructorDeclaration
 		]
 	}
