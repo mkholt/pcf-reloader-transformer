@@ -1,17 +1,17 @@
-import { writeFileSync } from "fs";
-import path = require("path");
+import { writeFileSync } from 'fs';
+import path = require('path');
 import {
 	createPrinter,
 	EmitHint,
 	Node,
 	Printer,
 	SourceFile,
-} from "typescript";
+} from 'typescript';
 
-import { log } from "../injected/logger";
-import { IPluginConfig } from "../pluginConfig";
+import { log } from '../injected/logger';
+import { IPluginConfig } from '../pluginConfig';
 
-export const newPath = (fileName: string) => {
+const newPath = (fileName: string) => {
 	const dirname = path.dirname(fileName)
 	const nameParts = path.basename(fileName).split(".")
 	const newName = nameParts.slice(0, nameParts.length - 1).join(".") + ".generated." + nameParts[nameParts.length - 1]

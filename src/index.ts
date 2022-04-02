@@ -1,10 +1,10 @@
-import ts from "typescript";
+import ts from 'typescript';
 
-import { hasLibraryImport } from "./builders";
-import { log } from "./injected";
-import FilePrinter from "./lib/filePrinter";
-import { IPluginConfig } from "./pluginConfig";
-import { visitor } from "./visitors";
+import { hasLibraryImport } from './builders';
+import { log } from './injected';
+import FilePrinter from './lib/filePrinter';
+import { IPluginConfig } from './pluginConfig';
+import { visitor } from './visitors';
 
 export default (opts: IPluginConfig) =>
 	(ctx: ts.TransformationContext) =>
@@ -16,7 +16,7 @@ export default (opts: IPluginConfig) =>
 			}
 
 			// Analyze the source file and update if relevant
-			const updatedSource = ts.visitEachChild(sourceFile, visitor(sourceFile, opts, ctx), ctx)
+			const updatedSource = ts.visitEachChild(sourceFile, visitor(sourceFile, opts), ctx)
 
 			// If the source was unchanged, abort
 			if (updatedSource == sourceFile) return sourceFile

@@ -4,14 +4,17 @@ import ts, {
 	Node,
 	SourceFile,
 	SyntaxKind,
-	TransformationContext,
-} from "typescript";
+} from 'typescript';
 
-import { createLibraryImport } from "../builders";
-import { buildClass } from "../builders/injectorClass";
-import { log } from "../injected/logger";
-import { id } from "../lib";
-import { IPluginConfig } from "../pluginConfig";
+import {
+	createCurrentScriptAssignment,
+	createLibraryImport,
+} from '../builders';
+import { buildBuilderUpdate } from '../builders/builder';
+import { buildClass } from '../builders/injectorClass';
+import { log } from '../injected/logger';
+import { id } from '../lib';
+import { IPluginConfig } from '../pluginConfig';
 
 type hasName = {
 	name: Exclude<ts.ClassDeclaration['name'], undefined>
@@ -33,18 +36,18 @@ const isValidNode = (node: Node): node is ts.ClassDeclaration & hasName => {
 	return true
 }
 
-export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: TransformationContext) =>
+export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 	(node: Node): Node[] | Node => {
 		if (!isValidNode(node)) {
 			return node
 		}
 
-		const className = node.name
+		const className = node.name.getText()
 
 		if (opts.verbose) {
 			const fileName = sourceFile.fileName
 			const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart());
-			log(`Found class: ${className.getText()} in ${fileName}:${pos.line + 1}`)
+			log(`Found class: ${className} in ${fileName}:${pos.line + 1}`)
 		}
 
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>
@@ -52,29 +55,11 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 		// Build the library import
 		const importDecl = createLibraryImport()
 
-		// Assign currentScript variable
-		//const scriptAssignment = createCurrentScriptAssignment()
-
-		// Check if the class has a constructor to hook into
-		//const foundConstructor = forEachChild(node, constructorVisitor)
-
-		// No constructor found, inject it
-		/*const constructor = (!foundConstructor)
-			? createConstructorDeclaration()
-			: undefined*/
-
-		// We want the class declaration as well, with modified methods
-		//const classDeclaration = visitEachChild(node, classVisitor(opts), ctx)
-
-		// Update the detected class with the new statements
-		/*const classMembers = [
-			...classDeclaration.members,
-			...(constructor ? [constructor] : []),
-			//refreshMethod
-		]*/
+		// Get the current script element
+		const currentScript = createCurrentScriptAssignment()
 
 		// Rename the class by postfixing _reloaded
-		const newName = id(node.name.getText(sourceFile) + "_reloaded")
+		const wrappedName = `${className}_reloaded`
 
 		// Remove the export modifier from the class, we only want to export ourselves
 		const modifiers = node.modifiers?.filter(m => m.kind !== SyntaxKind.ExportKeyword)
@@ -84,24 +69,25 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig, ctx: Transf
 			node,
 			node.decorators,
 			modifiers,
-			newName,
+			id(wrappedName),
 			node.typeParameters,
 			node.heritageClauses,
 			node.members
 		)
 
 		// Build the injected class
-		const reloaderClass = buildClass(id(node.name.getText(sourceFile)), sourceFile.languageVersion, ctx)
+		const reloaderClass = buildClass(className, wrappedName, opts)
 
-		// Generate constructor for after class declaration
-		//const constructorDeclaration = createConstructorCall(className)
+		// Build the code for instantiating
+		const updateBuilder = buildBuilderUpdate(className, wrappedName)
+		
 
 		// Return the updated source
 		return [
 			importDecl,
-			//scriptAssignment,
+			currentScript,
 			newClass,
-			reloaderClass
-			//constructorDeclaration
+			reloaderClass,
+			updateBuilder
 		]
 	}

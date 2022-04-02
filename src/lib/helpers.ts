@@ -8,9 +8,10 @@ import {
 	PropertyAccessExpression,
 	SyntaxKind,
 	ThisExpression,
-} from "typescript";
+} from 'typescript';
 
 export const id = factory.createIdentifier
+export const toString = factory.createStringLiteral
 
 export const declareConst = (name: BindingName, initializer: Expression) =>
 	factory.createVariableStatement(
@@ -20,17 +21,7 @@ export const declareConst = (name: BindingName, initializer: Expression) =>
 		], NodeFlags.Const)
 	)
 
-export const eqGreaterThan = factory.createToken(SyntaxKind.EqualsGreaterThanToken);
-
-export function setVariable(leftHandSide: Expression, rightHandSide: Expression) {
-	return factory.createExpressionStatement(
-		factory.createBinaryExpression(
-			leftHandSide,
-			SyntaxKind.EqualsToken,
-			rightHandSide
-		)
-	);
-}
+export const fatArrow = factory.createToken(SyntaxKind.EqualsGreaterThanToken);
 
 export type AccessPart = Identifier | ThisExpression | ParenthesizedExpression
 export type AccessExpression = PropertyAccessExpression | AccessPart
@@ -48,4 +39,3 @@ export const call = (callee: Expression, ...args: Expression[]) =>
 	factory.createCallExpression(callee, undefined, args)
 
 export const stmt = (expr: Expression) => factory.createExpressionStatement(expr)
-

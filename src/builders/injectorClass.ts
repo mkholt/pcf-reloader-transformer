@@ -1,47 +1,59 @@
-import { readFileSync } from "fs";
 import {
 	ClassDeclaration,
-	createSourceFile,
 	factory,
-	Identifier,
-	isClassDeclaration,
-	ScriptKind,
-	ScriptTarget,
-	TransformationContext,
-	visitEachChild,
-} from "typescript";
+	SyntaxKind,
+} from 'typescript';
 
-import { log } from "../injected/logger";
+import { log } from '../injected';
+import {
+	access,
+	call,
+	id,
+	stmt,
+	toString,
+} from '../lib';
+import { IPluginConfig } from '../pluginConfig';
+import {
+	defaultAddress,
+	getProtocol,
+} from '../protocol';
+import { currentScriptName } from './currentScript';
+import { accessLib } from './imports';
 
-export function buildClass(className: Identifier, languageVersion: ScriptTarget, ctx: TransformationContext): ClassDeclaration {
-	log("Reading source")
-	try {
-		const source = readFileSync("../baseclass.ts").toString()
-		log("Read source")
-		const createdSourceFile = createSourceFile("injected.ts", source, languageVersion, undefined, ScriptKind.TS)
-		log("Created source")
+function getConnectionAddress(opts: IPluginConfig): string {
+	const protocol = getProtocol(opts)
+	const address = opts.wsAddress ?? defaultAddress(protocol)
+	if (opts.verbose) log(`Using protocol: ${protocol}, binding to: ${address}`)
 
-		let classDeclaration: ClassDeclaration | undefined
-		visitEachChild(createdSourceFile, (n) => {
-			if (isClassDeclaration(n)) {
-				log("Is class: " + n.name?.getText(createdSourceFile))
-				classDeclaration = factory.updateClassDeclaration(n,
-					n.decorators,
-					n.modifiers,
-					className,
-					n.typeParameters,
-					n.heritageClauses,
-					n.members)
-			}
+	return address
+}
 
-			return n
-		}, ctx)
+export function buildClass(className: string, wrappedClass: string, opts: IPluginConfig): ClassDeclaration {
+	const heritage = factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
+		factory.createExpressionWithTypeArguments(accessLib("ReloaderClass"), [
+			factory.createTypeReferenceNode(wrappedClass),
+			factory.createTypeReferenceNode(id("IInputs")),
+			factory.createTypeReferenceNode(id("IOutputs"))
+		])
+	])
 
-		log("Class: " + classDeclaration)
-		if (!classDeclaration) throw Error("An unexpected error occurred parsing the injection")
-		return classDeclaration
-	} catch (e: unknown) {
-		console.log(e)
-		throw e
-	}
+	const connectionAddress = getConnectionAddress(opts)
+	const classNameString = toString(className)
+	const superCall = stmt(call(factory.createSuper(), classNameString, toString(connectionAddress), access(currentScriptName)))
+
+	const members = [
+		factory.createConstructorDeclaration(undefined, undefined, [], factory.createBlock([
+			superCall
+		], true))
+	]
+
+	const classDeclaration = factory.createClassDeclaration(
+		undefined,
+		[factory.createModifier(SyntaxKind.ExportKeyword)],
+		className,
+		undefined,
+		[heritage],
+		members)
+
+	return classDeclaration
 }
