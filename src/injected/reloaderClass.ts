@@ -62,8 +62,10 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 			this._wrapped.destroy()
 		}
 
-		if (this._params && this._params.container)
-			this._params.container.innerText = "Reloading..."
+		if (this._params && this._params.container) {
+			const spinner = this.getSpinner()
+			this._params.container.replaceChildren(spinner)
+		}
 
 		// If _scriptTag is set, we've already reloaded once, remove the tag
 		if (this._scriptTag) {
@@ -72,6 +74,8 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 
 		// Create a new script tag
 		this._scriptTag = document.createElement("script")
+		this._scriptTag.defer = true
+
 		// Listen for load event so we can initialize
 		this._scriptTag.addEventListener("load", () => this.onLoadScript())
 
@@ -80,6 +84,47 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 
 		// Add the script tag to the document
 		window.document.body.appendChild(this._scriptTag)
+	}
+
+	private _spinner: HTMLDivElement|undefined
+	private getSpinner() {
+		if (this._spinner) return this._spinner
+
+		const spinner = document.createElement("div")
+		spinner.style.boxSizing = "border-box"
+		spinner.style.borderRadius = "50%"
+		spinner.style.borderWidth = "1.5px"
+		spinner.style.borderStyle = "solid"
+		spinner.style.borderColor = "rgb(0, 120, 212) rgb(199, 224, 244) rgb(199, 224, 244)"
+		spinner.style.borderImage = "initial"
+		spinner.style.animationName = "reloader-spinner"
+		spinner.style.animationDuration = "1.3s"
+		spinner.style.animationIterationCount = "infinite"
+		spinner.style.animationTimingFunction = "cubic-bezier(0.53, 0.21, 0.29, 0.67)"
+		spinner.style.width = "16px"
+		spinner.style.height = "16px"
+
+		const keyframes = document.createElement("style")
+		keyframes.innerHTML = `
+			@keyframes reloader-spinner {
+				0% {
+					transform: rotate(0deg);
+				}
+				100% {
+					transform: rotate(360deg);
+				}
+			}
+		`
+		spinner.appendChild(keyframes)
+
+		const reloading = document.createElement("div")
+		reloading.style.display = "flex"
+		reloading.style.gap = "6px"
+		reloading.textContent = "Reloading..."
+		reloading.appendChild(spinner)
+
+		this._spinner = reloading
+		return reloading
 	}
 
 	private onLoadScript() {
