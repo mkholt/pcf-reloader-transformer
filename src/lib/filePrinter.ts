@@ -32,6 +32,6 @@ export default (sourceFile: SourceFile, updatedSource: SourceFile, opt: IPluginC
 	writeFileSync(generatedPath, generated)
 
 	if (opt.verbose) {
-		log("Generated file written to: " + generatedPath)
+		log(`Generated file written to: ${generatedPath}`)
 	}
 }

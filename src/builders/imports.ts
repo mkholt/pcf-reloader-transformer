@@ -16,6 +16,7 @@ import {
 export type MethodName = keyof typeof inject
 
 const injectLibName = id("_pcfReloadLib")
+const injectLibSource = "pcf-reloader-transformer/dist/injected"
 
 /**
  * Build a namespace inmport for the injected code
@@ -34,11 +35,8 @@ export const createLibraryImport = () =>
 			undefined,
 			factory.createNamespaceImport(injectLibName)
 		),
-		toString("pcf-reloader-transformer/dist/injected")
+		toString(injectLibSource)
 	)
-
-let _importSource: string|undefined
-const libraryImportSource = (sourceFile: SourceFile) => _importSource ?? (_importSource = printNode(createLibraryImport(), sourceFile))
 
 /**
  * Check if the injected code library has already been imported in the given source file
@@ -51,7 +49,7 @@ export const hasLibraryImport = (sourceFile: SourceFile) => {
 	const existingImportDecl = forEachChild(sourceFile, (n) => {
 		if (!isImportDeclaration(n)) return undefined
 		const importText = printNode(n, sourceFile)
-		return importText === libraryImportSource(sourceFile)
+		return importText.indexOf(injectLibSource) > -1
 			? n
 			: undefined
 	})
