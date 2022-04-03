@@ -1,3 +1,9 @@
+1.x.x (2022/xx/xx)
+- Restructure code to wrap in class instead of injecting directly in module (#12)
+
+1.1.2 (2022/02/23)
+- Do not auto-install TS-Patch
+
 1.1.1 (2022/02/16)
 - Move TS Patch to a dependency and auto-patch on install
 - Auto-detect protocol based on installed PCF Start version
