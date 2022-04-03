@@ -76,4 +76,4 @@ var TransformerDemo = /** @class */ (function (_super) {
     return TransformerDemo;
 }(_pcfReloadLib.ReloaderClass));
 exports.TransformerDemo = TransformerDemo;
-_pcfReloadLib.SetBuilder("TransformerDemo", function () { return new TransformerDemo_reloaded; });
+_pcfReloadLib.UpdateBuilder("TransformerDemo", function () { return new TransformerDemo_reloaded; });

@@ -18,7 +18,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
 var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
 var _pcfReloadCurrentScript = document.currentScript;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 var SampleComponent_reloaded = /** @class */ (function () {
+    /**
+     * Empty constructor.
+     */
     function SampleComponent_reloaded() {
     }
     /**

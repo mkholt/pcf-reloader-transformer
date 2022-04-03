@@ -65,4 +65,4 @@ var SampleComponent = /** @class */ (function (_super) {
     return SampleComponent;
 }(_pcfReloadLib.ReloaderClass));
 exports.SampleComponent = SampleComponent;
-_pcfReloadLib.SetBuilder("SampleComponent", function () { return new SampleComponent_reloaded; })
+_pcfReloadLib.UpdateBuilder("SampleComponent", function () { return new SampleComponent_reloaded; })

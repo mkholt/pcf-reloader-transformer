@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs';
-import path = require('path');
+import path from 'path';
 import {
 	createPrinter,
 	EmitHint,
@@ -14,7 +14,12 @@ import { IPluginConfig } from '../pluginConfig';
 const newPath = (fileName: string) => {
 	const dirname = path.dirname(fileName)
 	const nameParts = path.basename(fileName).split(".")
-	const newName = nameParts.slice(0, nameParts.length - 1).join(".") + ".generated." + nameParts[nameParts.length - 1]
+
+	const firstPart = nameParts.slice(0, nameParts.length - 1).join(".")
+	const lastPart = nameParts[nameParts.length - 1]
+
+	const newName = `${firstPart}.generated.${lastPart}`
+
 	const generatedPath = path.resolve(dirname, newName)
 	return generatedPath
 }
