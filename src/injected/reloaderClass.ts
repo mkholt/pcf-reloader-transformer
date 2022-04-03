@@ -27,7 +27,7 @@ const isScript = (s: HTMLOrSVGScriptElement|null): s is HTMLScriptElement => !!(
  * @param className The name of the wrapped PCF component class
  * @param builder The lambda function building the instance½
  */
-export const SetBuilder = <TBase extends ComponentFramework.StandardControl<unknown, unknown>>(className: string, builder: () => TBase) => {
+export const UpdateBuilder = <TBase extends ComponentFramework.StandardControl<unknown, unknown>>(className: string, builder: () => TBase) => {
 	log(`Updating builder function for ${className}`)
 	window.pcfConstructors = {
 		...window.pcfConstructors,
@@ -51,6 +51,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		this.buildWrapped()
 	}
 
+	private _scriptTag: HTMLScriptElement|undefined
 	reloadComponent(): void {
 		// If we don't have a remote-url, abort
 		if (!this._remoteUrl)
@@ -64,25 +65,32 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		if (this._params && this._params.container)
 			this._params.container.innerText = "Reloading..."
 
+		// If _scriptTag is set, we've already reloaded once, remove the tag
+		if (this._scriptTag) {
+			window.document.body.removeChild(this._scriptTag)
+		}
+
 		// Create a new script tag
-		const script = document.createElement("script")
-
+		this._scriptTag = document.createElement("script")
 		// Listen for load event so we can initialize
-		script.addEventListener("load", () => {
-			this.buildWrapped()
-			if (!this._params || !this._wrapped) return;
-
-			// The new instance was initialized, call it with the last known state of the component
-			const { context, notifyOutputChanged, state, container } = this._params
-			this._wrapped.init(context, notifyOutputChanged, state, container)
-			this._wrapped.updateView(context)
-		})
+		this._scriptTag.addEventListener("load", () => this.onLoadScript())
 
 		// Set the source
-		script.src = this._remoteUrl
+		this._scriptTag.src = this._remoteUrl + "#" + +(new Date())
 
 		// Add the script tag to the document
-		window.document.body.appendChild(script)
+		window.document.body.appendChild(this._scriptTag)
+	}
+
+	private onLoadScript() {
+		log(`Replacing wrapped instance of ${this._className}`)
+		this.buildWrapped()
+		if (!this._params || !this._wrapped) return;
+
+		// The new instance was initialized, call it with the last known state of the component
+		const { context, notifyOutputChanged, state, container } = this._params
+		this._wrapped.init(context, notifyOutputChanged, state, container)
+		this._wrapped.updateView(context)
 	}
 
 	/**
@@ -90,7 +98,6 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 	 */
 	private buildWrapped() {
 		const className = this._className
-		log(`Replacing wrapped instance of ${className}`)
 		const constructors = window.pcfConstructors || {}
 		const builder = constructors[className]
 		this._wrapped = builder?.call(this) as TBase
@@ -121,6 +128,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 	destroy(): void {
 		// Disconnect from the socket
 		doDisconnect()
+
 
 		// Clean up the parameters
 		this._params = undefined

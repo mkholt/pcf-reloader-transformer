@@ -26,5 +26,5 @@ export const buildBuilderUpdate = (className: string, wrappedName: string) => {
 
 	const classNameString = toString(className)
 
-	return call(accessLib("SetBuilder"), classNameString, lambda)
+	return call(accessLib("UpdateBuilder"), classNameString, lambda)
 }
