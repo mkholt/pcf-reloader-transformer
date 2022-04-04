@@ -1,30 +1,22 @@
 import {
 	createServer,
 	Server as HttpServer,
-} from "http";
-import { mock } from "jest-mock-extended";
+} from 'http';
+import { mock } from 'jest-mock-extended';
 import {
 	Namespace,
 	Server as SocketIOServer,
-} from "socket.io";
-import waitForExpect from "wait-for-expect";
+} from 'socket.io';
+import waitForExpect from 'wait-for-expect';
 
-import { reloadComponent } from "../../src/injected/callouts";
-import { log } from "../../src/injected/logger";
+import * as logger from '../../src/injected/logger';
 import {
+	ComponentWrapper,
 	doConnect,
 	doDisconnect,
-	PcfReloaderWindow,
-	ReloadParams,
-} from "../../src/injected/sync";
+} from '../../src/injected/sync';
 
-jest.mock('../../src/injected/callouts', () => ({
-	reloadComponent: jest.fn().mockName("reloadComponent")
-}))
-
-jest.mock('../../src/injected/logger', () => ({
-	log: jest.fn().mockName("log")
-}))
+const log = jest.spyOn(logger, 'log').mockImplementation().mockName('log')
 
 describe("sync integration (bs)", () => {
 	let wsAddr: string
@@ -32,11 +24,9 @@ describe("sync integration (bs)", () => {
 	let io: SocketIOServer
 	let ns: Namespace
 
-	beforeAll(() => {
-		Object.defineProperty(global, "window", {
-			value: mock<PcfReloaderWindow>()
-		})
-	})
+	const reloader = {
+		reloadComponent: jest.fn().mockName("reloadComponent")
+	}
 
 	beforeEach((done) => {
 		httpServer = createServer()
@@ -75,21 +65,23 @@ describe("sync integration (bs)", () => {
 			})
 		})
 
-		doConnect(wsAddr, mock<ReloadParams>())
+		const reloader = mock<ComponentWrapper>()
+
+		doConnect(reloader, wsAddr)
 	})
 
 	it("calls reload", (done) => {
 		ns.on("connection", (socket) => {
 			socket.emit("browser:reload")
 
-			waitForExpect(() => expect(reloadComponent).toHaveBeenCalled()).then(() => {
-				expect(log).toBeCalledWith("Reload triggered")
-				socket.disconnect(true)
+			waitForExpect(() => expect(log).toBeCalledWith("Reload triggered")).then(() => {
+				expect(reloader.reloadComponent).toHaveBeenCalled()
+				doDisconnect()
 				done()
 			})
 		})
 
-		doConnect(wsAddr, mock<ReloadParams>())
+		doConnect(reloader, wsAddr)
 	})
 
 	it("does not call on invalid message", (done) => {
@@ -97,12 +89,12 @@ describe("sync integration (bs)", () => {
 			socket.emit("unknown:event")
 
 			waitForExpect(() => expect(log).toBeCalledWith("> [\"unknown:event\"]")).then(() => {
-				expect(reloadComponent).not.toHaveBeenCalled()
-				socket.disconnect(true)
+				expect(reloader.reloadComponent).not.toHaveBeenCalled()
+				doDisconnect()
 				done()
 			})
 		})
 
-		doConnect(wsAddr, mock<ReloadParams>(), true)
+		doConnect(reloader, wsAddr, true)
 	})
 })
