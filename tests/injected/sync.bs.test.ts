@@ -24,7 +24,7 @@ describe("sync integration (bs)", () => {
 	let io: SocketIOServer
 	let ns: Namespace
 
-	const reloader = {
+	const reloader: ComponentWrapper = {
 		reloadComponent: jest.fn().mockName("reloadComponent")
 	}
 

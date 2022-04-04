@@ -77,7 +77,7 @@ export const doConnect = (reloader: ComponentWrapper, baseUrl: string, debug?: b
 	log(`Live reload enabled on ${address}`)	
 }
 
-const isWebSocket = (s: WebSocket|SocketIo): s is WebSocket => !!(s as WebSocket)?.onmessage
+const isWebSocket = (s: WebSocket|SocketIo): s is WebSocket => !!(s as WebSocket).onmessage
 
 /**
  * Disconnect from any connected socket
