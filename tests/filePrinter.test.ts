@@ -8,11 +8,15 @@ import {
 	extractMethod,
 } from './utils/codeGeneration';
 
-const writeFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation().mockName("writeFileSync")
-jest.spyOn(path, 'dirname').mockImplementation(() => '/').mockName("dirname")
-const logSpy = jest.spyOn(logger, 'log').mockImplementation().mockName("log")
-
 describe("File Printer", () => {
+	let writeFileSpy: jest.SpyInstance<void, [file: fs.PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView, options?: fs.WriteFileOptions]>
+	let logSpy: jest.SpyInstance<void, string[]>
+
+	beforeAll(() => {
+		writeFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation().mockName("writeFileSync")
+		logSpy = jest.spyOn(logger, 'log').mockImplementation().mockName("log")
+	})
+
 	beforeEach(() => {
 		jest.clearAllMocks()
 	})
@@ -26,7 +30,7 @@ describe("File Printer", () => {
 `('can generate path ($from -> $to)', ({ from, to }) => {
 		// Given
 		const sourceProps = extractMethod(buildClass("hello() { console.log('Hello, world!') }"), from)
-		const expectedPath = path.resolve("/", to)
+		const expectedPath = path.resolve(path.dirname("./"), to)
 
 		// When
 		printFile(sourceProps.sourceFile, sourceProps.sourceFile, { verbose: true })
