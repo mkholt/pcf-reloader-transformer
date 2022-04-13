@@ -19,6 +19,9 @@ exports.SampleComponent = void 0;
 var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent_reloaded = /** @class */ (function () {
+    /**
+     * Empty constructor.
+     */
     function SampleComponent_reloaded() {
     }
     /**
@@ -57,7 +60,7 @@ var SampleComponent_reloaded = /** @class */ (function () {
 var SampleComponent = /** @class */ (function (_super) {
     __extends(SampleComponent, _super);
     function SampleComponent() {
-        return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript) || this;
+        return _super.call(this, "SampleComponent", "%%ADDRESS%%", _pcfReloadCurrentScript) || this;
     }
     return SampleComponent;
 }(_pcfReloadLib.ReloaderClass));

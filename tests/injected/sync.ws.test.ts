@@ -2,30 +2,23 @@
  * @jest-environment jsdom
  */
 
-import { mock } from "jest-mock-extended";
-import { Server } from "mock-socket";
-import waitForExpect from "wait-for-expect";
+import { Server } from 'mock-socket';
+import waitForExpect from 'wait-for-expect';
 
+import * as logger from '../../src/injected/logger';
 import {
-	log,
-	reloadComponent,
-} from "../../src/injected";
-import {
+	ComponentWrapper,
 	doConnect,
 	doDisconnect,
-	ReloadParams,
-} from "../../src/injected/sync";
+} from '../../src/injected/sync';
 
-jest.mock('../../src/injected/callouts', () => ({
-	reloadComponent: jest.fn().mockName("reloadComponent")
-}))
-
-jest.mock('../../src/injected/logger', () => ({
-	log: jest.fn().mockName("log")
-}))
+const log = jest.spyOn(logger, 'log').mockImplementation().mockName("log")
 
 describe("sync integration (ws)", () => {
 	const wsAddr = "ws://localhost:8080"
+	const reloader: ComponentWrapper = {
+		reloadComponent: jest.fn().mockName("reloadComponent")
+	}
 
 	beforeEach(() => {
 		jest.clearAllMocks()
@@ -44,10 +37,9 @@ describe("sync integration (ws)", () => {
 			mockServer.stop(done)
 		})
 
-		doConnect(wsAddr, mock<ReloadParams>())
+		doConnect(reloader, wsAddr)
 	})
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	it.each<any>(["reload","refreshcss"])('calls reload on "%s"', (message: string, done: jest.DoneCallback) => {
 		const mockServer = new Server(wsAddr)
 
@@ -57,14 +49,14 @@ describe("sync integration (ws)", () => {
 			socket.send(message)
 
 			waitForExpect(() => {
-				expect(reloadComponent).toHaveBeenCalled()
+				expect(reloader.reloadComponent).toHaveBeenCalled()
 			}).then(() => {
 				expect(log).toHaveBeenCalledWith("Reload triggered")
 				mockServer.stop(done)
 			})
 		})
 
-		doConnect(wsAddr, mock<ReloadParams>())
+		doConnect(reloader, wsAddr)
 	})
 
 	it("does not call on invalid message", (done) => {
@@ -78,11 +70,11 @@ describe("sync integration (ws)", () => {
 			waitForExpect(() => {
 				expect(log).toHaveBeenCalledWith("> unknown")
 			}).then(() => {
-				expect(reloadComponent).not.toHaveBeenCalled()
+				expect(reloader.reloadComponent).not.toHaveBeenCalled()
 				mockServer.stop(done)
 			})
 		})
 
-		doConnect(wsAddr, mock<ReloadParams>(), true)
+		doConnect(reloader, wsAddr, true)
 	})
 })

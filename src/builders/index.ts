@@ -1,4 +1,4 @@
-export * from './constructor';
+export * from './builder';
 export * from './currentScript';
 export * from './imports';
-export * from './methodUpdates';
+export * from './injectorClass';

@@ -1,20 +1,25 @@
-import { writeFileSync } from "fs";
-import path = require("path");
+import { writeFileSync } from 'fs';
+import path from 'path';
 import {
 	createPrinter,
 	EmitHint,
 	Node,
 	Printer,
 	SourceFile,
-} from "typescript";
+} from 'typescript';
 
-import { log } from "../injected/logger";
-import { IPluginConfig } from "../pluginConfig";
+import { log } from '../injected/logger';
+import { IPluginConfig } from '../pluginConfig';
 
-export const newPath = (fileName: string) => {
+const newPath = (fileName: string) => {
 	const dirname = path.dirname(fileName)
 	const nameParts = path.basename(fileName).split(".")
-	const newName = nameParts.slice(0, nameParts.length - 1).join(".") + ".generated." + nameParts[nameParts.length - 1]
+
+	const firstPart = nameParts.slice(0, nameParts.length - 1).join(".")
+	const lastPart = nameParts[nameParts.length - 1]
+
+	const newName = `${firstPart}.generated.${lastPart}`
+
 	const generatedPath = path.resolve(dirname, newName)
 	return generatedPath
 }
@@ -32,6 +37,6 @@ export default (sourceFile: SourceFile, updatedSource: SourceFile, opt: IPluginC
 	writeFileSync(generatedPath, generated)
 
 	if (opt.verbose) {
-		log("Generated file written to: " + generatedPath)
+		log(`Generated file written to: ${generatedPath}`)
 	}
 }

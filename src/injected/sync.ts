@@ -1,7 +1,6 @@
-import socket from "socket.io-client";
+import socket from 'socket.io-client';
 
-import { reloadComponent } from "./callouts";
-import { log } from "./logger";
+import { log } from './logger';
 
 type SocketIo = {
 	on: (eventName: string, callback: (...args: unknown[]) => void) => SocketIo
@@ -9,23 +8,9 @@ type SocketIo = {
 	close: () => SocketIo
 }
 
-export type ReloadParams = {
-    context: ComponentFramework.Context<unknown>
-    notifyOutputChanged: () => void
-    state: ComponentFramework.Dictionary
-    container: HTMLDivElement
-}
+let _socket: SocketIo|WebSocket|undefined
 
-export interface PcfReloaderWindow extends Window {
-    pcfReloadParams: ReloadParams
-}
-
-declare const window: PcfReloaderWindow
-
-let _socket: SocketIo|null
-let _websocket: WebSocket|null
-
-const bsConnect = (baseUrl: string, debug?: boolean) => {
+const bsConnect = (baseUrl: string, onReload: () => void, debug?: boolean) => {
 	const socketConfig = {
 		"reconnectionAttempts": 50,
 		"path": "/browser-sync/socket.io",
@@ -35,10 +20,7 @@ const bsConnect = (baseUrl: string, debug?: boolean) => {
 	_socket = socket(socketUrl, socketConfig) as SocketIo
 	_socket.on('disconnect', () => log("BrowserSync disconnected"))
 	_socket.on('connect', () => log("BrowserSync connected"))
-	_socket.on('browser:reload', () => {
-		log("Reload triggered")
-		reloadComponent()
-	})
+	_socket.on('browser:reload', onReload)
 
 	if (debug) {
 		const onEvent = _socket.onevent
@@ -52,41 +34,59 @@ const bsConnect = (baseUrl: string, debug?: boolean) => {
 	return socketUrl
 }
 
-const wsConnect = (address: string, debug?: boolean) => {
-	_websocket = new WebSocket(address)
-	_websocket.onmessage = (msg: MessageEvent<string>) => {
+const wsConnect = (address: string, onReload: () => void, debug?: boolean) => {
+	_socket = new WebSocket(address)
+	_socket.onmessage = (msg: MessageEvent<string>) => {
 		if (msg.data !== "reload" && msg.data !== "refreshcss") {
 			if (debug) {
 				log("> " + msg.data)
 			}
 			return
 		}
-		
-		log("Reload triggered")
-		reloadComponent()
+
+		onReload()
 	}
 
 	return address
 }
 
-export const doConnect = (baseUrl: string, params: ReloadParams, debug?: boolean) => {
-	window.pcfReloadParams = params;
-
-	const address = (baseUrl.indexOf("http") > -1)
-		? bsConnect(baseUrl, debug)
-		: wsConnect(baseUrl, debug)
-
-	log("Live reload enabled on " + address)	
+export interface ComponentWrapper {
+	reloadComponent(): void
 }
 
-export const doDisconnect = () => {
-	if (_socket) {
-		_socket.close()
+/**
+ * Connect to the appropriate endpoint as given by the baseUrl.
+ * 
+ * If the URL starts with http, use Browser-Sync (Socket.IO),
+ * otherwise use classic WebSockets
+ * 
+ * @param reloader The wrapper class to notify about reload
+ * @param baseUrl The URL to connect to
+ * @param debug If `true` any unknown message is written to console
+ */
+export const doConnect = (reloader: ComponentWrapper, baseUrl: string, debug?: boolean) => {
+	const onReload = () => {
+		log("Reload triggered")
+		reloader.reloadComponent()
 	}
 
-	if (_websocket) {
-		_websocket.onmessage = null;
-		_websocket.close();
+	const address = (baseUrl.indexOf("http") > -1)
+		? bsConnect(baseUrl, onReload, debug)
+		: wsConnect(baseUrl, onReload, debug)
+
+	log(`Live reload enabled on ${address}`)	
+}
+
+const isWebSocket = (s: WebSocket|SocketIo): s is WebSocket => !!(s as WebSocket).onmessage
+
+/**
+ * Disconnect from any connected socket
+ */
+export const doDisconnect = () => {
+	if (_socket) {
+		if (isWebSocket(_socket)) _socket.onmessage = null
+		_socket.close()
+		_socket = undefined
 	}
 
 	log("Live reload disabled")

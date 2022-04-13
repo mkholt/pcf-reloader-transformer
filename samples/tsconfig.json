@@ -9,7 +9,7 @@
 		],
 		"strict": true,
 		"strictPropertyInitialization": false,
-		"outDir": "../tests/samples",
+		"outDir": "./out",
 		"typeRoots": [
 			"../node_modules/@types"
 		],

@@ -10,9 +10,9 @@ import {
 	ScriptKind,
 	ScriptTarget,
 	SourceFile,
-} from "typescript";
+} from 'typescript';
 
-import { isDefined } from "./common";
+import { isDefined } from './common';
 
 export function buildClass(inner: string) {
 	return `class test { ${inner} }`
@@ -24,8 +24,8 @@ type SourceProps = {
 	method?: MethodDeclaration
 }
 
-export function extractMethod(source: string): SourceProps {
-	const sourceFile = createSourceFile("test.ts", source, ScriptTarget.Latest, true, ScriptKind.TS)
+export function extractMethod(source: string, fileName?: string): SourceProps {
+	const sourceFile = createSourceFile(fileName ?? "test.ts", source, ScriptTarget.Latest, true, ScriptKind.TS)
 	const classDef = forEachChild(sourceFile, (n: Node) => isClassDeclaration(n) ? n : undefined)
 	isDefined(classDef)
 
