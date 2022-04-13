@@ -1,4 +1,7 @@
-import { log } from './logger';
+import {
+	error,
+	log,
+} from './logger';
 import {
 	ComponentWrapper,
 	doConnect,
@@ -74,10 +77,12 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 
 		// Create a new script tag
 		this._scriptTag = document.createElement("script")
+		this._scriptTag.setAttribute("data-testid", "reloader-script")
 		this._scriptTag.defer = true
 
 		// Listen for load event so we can initialize
 		this._scriptTag.addEventListener("load", () => this.onLoadScript())
+		this._scriptTag.addEventListener("error", (e) => this.onScriptError(e))
 
 		// Set the source
 		this._scriptTag.src = this._remoteUrl + "#" + +(new Date())
@@ -118,6 +123,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		spinner.appendChild(keyframes)
 
 		const reloading = document.createElement("div")
+		reloading.setAttribute("data-testid", "reloading-container")
 		reloading.style.display = "flex"
 		reloading.style.gap = "6px"
 		reloading.textContent = "Reloading..."
@@ -136,6 +142,25 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		const { context, notifyOutputChanged, state, container } = this._params
 		this._wrapped.init(context, notifyOutputChanged, state, container)
 		this._wrapped.updateView(context)
+	}
+
+	private onScriptError(e: ErrorEvent) {
+		error(`An error occurred loading the ${this._className} component:`, e.message)
+		if (!this._params || !this._params.container) return;
+
+		const button = document.createElement("button")
+		button.textContent = "Try again"
+		button.setAttribute("data-testid", "error-button-retry")
+		button.addEventListener("click", () => this.reloadComponent())
+
+		const message = document.createElement("span")
+		message.textContent = `An error occurred loading the component ${this._className} - see console for details`
+
+		const errorDiv = document.createElement("div")
+		errorDiv.setAttribute("data-testid", "error-container")
+		errorDiv.appendChild(button)
+		errorDiv.appendChild(message)
+		this._params.container.replaceChildren(errorDiv)
 	}
 
 	/**

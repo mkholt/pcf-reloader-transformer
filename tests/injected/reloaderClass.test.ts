@@ -8,6 +8,12 @@ import {
 } from 'jest-mock-extended';
 
 import {
+	fireEvent,
+	getByTestId,
+	queryByTestId,
+} from '@testing-library/dom';
+
+import {
 	doConnect,
 	ReloaderClass,
 	UpdateBuilder,
@@ -15,7 +21,7 @@ import {
 import * as logger from '../../src/injected/logger';
 
 const logSpy = jest.spyOn(logger, 'log').mockImplementation().mockName('log')
-const appendChildSpy = jest.spyOn(window.document.body, "appendChild")
+const errorSpy = jest.spyOn(logger, 'error').mockImplementation().mockName('error')
 
 jest.mock('../../src/injected/sync', () => ({
 	doConnect: jest.fn().mockName("doConnect"),
@@ -46,12 +52,12 @@ const init = () => {
 		})
 	})
 
-	beforeEach(() => {
-		jest.clearAllMocks()
+	afterEach(() => {
 		mockClear(component)
+		jest.clearAllMocks()
+		jest.useRealTimers()
+		document.body.innerHTML = ''
 	})
-
-	afterEach(() => jest.useRealTimers())
 
 	return { getConstructors, setConstructors, builder, wrapped }
 }
@@ -67,6 +73,19 @@ const scriptTag = (src?: string) => {
 	const currentScript = scriptWrapper.appendChild(scriptTag)
 
 	return currentScript
+}
+
+const getScriptTag = () => getByTestId<HTMLScriptElement>(document.body, "reloader-script")
+const queryScriptTag = (): HTMLScriptElement|null => queryByTestId<HTMLScriptElement>(document.body, "reloader-script")
+
+const initMocks = () => {
+	const context = mock<ComponentFramework.Context<unknown>>()
+	const noc = jest.fn().mockName("notifyOutputChanged")
+	const state = mock<ComponentFramework.Dictionary>()
+	const container = document.createElement("div")
+	document.body.appendChild(container)
+
+	return {context, noc, state, container}
 }
 
 describe('Wrapper class', () => {
@@ -101,10 +120,7 @@ describe('Wrapper class', () => {
 		const currentScript = scriptTag()
 		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
 
-		const context = mock<ComponentFramework.Context<unknown>>()
-		const noc = jest.fn().mockName("notifyOutputChanged")
-		const state = mock<ComponentFramework.Dictionary>()
-		const container = document.createElement("div")
+		const {context, noc, state, container} = initMocks()
 
 		// When
 		reloader.init(context, noc, state, container)
@@ -145,10 +161,7 @@ describe('Wrapper class', () => {
 		const currentScript = scriptTag()
 		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
 
-		const context = mock<ComponentFramework.Context<unknown>>()
-		const noc = jest.fn().mockName("notifyOutputChanged")
-		const state = mock<ComponentFramework.Dictionary>()
-		const container = mock<HTMLDivElement>()
+		const {context, noc, state, container} = initMocks()
 		reloader.init(context, noc, state, container)
 
 		jest.useFakeTimers().setSystemTime(999999999)
@@ -158,11 +171,9 @@ describe('Wrapper class', () => {
 
 		// Then
 		expect(wrapped.destroy).toHaveBeenCalled()
-		expect(container.replaceChildren).toHaveBeenCalledWith(expect.anything())
-		expect(appendChildSpy).toHaveBeenCalled()
+		expect(getByTestId(document.body, "reloading-container")).toHaveTextContent("Reloading...")
 
-		const newScriptTag = appendChildSpy.mock.calls[0][0] as HTMLScriptElement
-		expect(newScriptTag).not.toEqual(currentScript)
+		const newScriptTag = getScriptTag()
 		expect(newScriptTag.src).toBe(currentScript.src + "#999999999")
 	})
 
@@ -171,32 +182,21 @@ describe('Wrapper class', () => {
 		const currentScript = scriptTag()
 		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
 
-		const context = mock<ComponentFramework.Context<unknown>>()
-		const noc = jest.fn().mockName("notifyOutputChanged")
-		const state = mock<ComponentFramework.Dictionary>()
-		const container = mock<HTMLDivElement>()
+		const {context, noc, state, container} = initMocks()
 		reloader.init(context, noc, state, container)
 
-		const removeChildSpy = jest.spyOn(window.document.body, "removeChild")
-		jest.useFakeTimers().setSystemTime(1000)
-
 		// When
+		jest.useFakeTimers().setSystemTime(1000)
 		reloader.reloadComponent()
+		const newScriptTag = getScriptTag()
+		expect(newScriptTag.src).toBe(currentScript.src + "#1000")
 
 		jest.setSystemTime(2000)
 		reloader.reloadComponent()
 
 		// Then
-		expect(appendChildSpy).toHaveBeenCalledTimes(2)
-
-		const newScriptTag = appendChildSpy.mock.calls[0][0] as HTMLScriptElement
-		expect(newScriptTag).not.toEqual(currentScript)
-		expect(newScriptTag.src).toBe(currentScript.src + "#1000")
-		expect(removeChildSpy).toHaveBeenCalledWith(newScriptTag)
-
-		const secondScriptTag = appendChildSpy.mock.calls[1][0] as HTMLScriptElement
-		expect(secondScriptTag).not.toEqual(newScriptTag)
-		expect(secondScriptTag.src).toBe(currentScript.src + "#2000")
+		const finalScriptTag = getScriptTag()
+		expect(finalScriptTag.src).toBe(currentScript.src + "#2000")
 	})
 
 	it('will initialize on onLoad', () => {
@@ -204,10 +204,7 @@ describe('Wrapper class', () => {
 		const currentScript = scriptTag()
 		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
 
-		const context = mock<ComponentFramework.Context<unknown>>()
-		const noc = jest.fn().mockName("notifyOutputChanged")
-		const state = mock<ComponentFramework.Dictionary>()
-		const container = mock<HTMLDivElement>()
+		const {context, noc, state, container} = initMocks()
 		reloader.init(context, noc, state, container)
 
 		const newContext = mock<ComponentFramework.Context<unknown>>()
@@ -217,17 +214,72 @@ describe('Wrapper class', () => {
 		const newWrapped = mock<ComponentFramework.StandardControl<unknown, unknown>>()
 		builder.mockReturnValueOnce(newWrapped)
 
-		const newScriptTag = appendChildSpy.mock.calls[0][0] as HTMLScriptElement
+		const newScriptTag = getScriptTag()
 
 		// When
-		const event = new Event("load")
-		newScriptTag.dispatchEvent(event)		
+		fireEvent(newScriptTag, new Event("load"))
 
 		// Then
 		expect(builder).toHaveBeenCalledTimes(2)
 		expect(newWrapped.init).toHaveBeenCalledWith(newContext, noc, state, container)
 		expect(newWrapped.updateView).toHaveBeenCalledWith(newContext)
 		expect(logSpy).toHaveBeenCalledWith(`Replacing wrapped instance of COMPONENT_NAME`)
+	})	
+
+	it('allows manual reload on error', async () => {
+		// Given
+		const currentScript = scriptTag()
+		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
+
+		const {context, noc, state, container} = initMocks()
+		reloader.init(context, noc, state, container)
+		jest.useFakeTimers().setSystemTime(1000)
+
+		reloader.reloadComponent()
+
+		const newScriptTag = getScriptTag()
+		jest.setSystemTime(2000)
+
+		// When
+		fireEvent(newScriptTag, new Event("error"))
+
+		// Then
+		expect(newScriptTag.src).toBe(currentScript.src + "#1000")
+
+		expect(logSpy).not.toHaveBeenCalledWith(`Replacing wrapped instance of COMPONENT_NAME`)
+		expect(errorSpy).toHaveBeenCalledWith("An error occurred loading the COMPONENT_NAME component:", undefined)
+
+		const errorContainer = getByTestId(container, 'error-container')
+		expect(errorContainer).toHaveTextContent("An error occurred loading the component COMPONENT_NAME - see console for details")
+		
+		const button = getByTestId(errorContainer, 'error-button-retry')
+		expect(button).toHaveTextContent('Try again')
+
+		fireEvent.click(button)
+
+		const finalScriptTag = getScriptTag()
+		expect(finalScriptTag.src).toBe(currentScript.src + "#2000")
+	})
+
+	it('does not allow manual reload if no container', () => {
+		// Given
+		const currentScript = scriptTag()
+		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
+
+		jest.useFakeTimers().setSystemTime(1000)
+
+		reloader.reloadComponent()
+
+		const newScriptTag = getScriptTag()
+		jest.setSystemTime(2000)
+
+		// When
+		fireEvent(newScriptTag, new Event("error"))
+
+		// Then
+		expect(newScriptTag.src).toBe(currentScript.src + "#1000")
+		expect(errorSpy).toHaveBeenCalledWith("An error occurred loading the COMPONENT_NAME component:", undefined)
+		expect(queryByTestId(document.body, 'error-container')).toBeNull()
 	})
 
 	it('aborts if reloading without init', () => {
@@ -235,13 +287,12 @@ describe('Wrapper class', () => {
 		const currentScript = scriptTag()
 		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
 
-		
 		reloader.reloadComponent()
 
 		const newWrapped = mock<ComponentFramework.StandardControl<unknown, unknown>>()
 		builder.mockReturnValueOnce(newWrapped)
 
-		const newScriptTag = appendChildSpy.mock.calls[0][0] as HTMLScriptElement
+		const newScriptTag = getScriptTag()
 
 		// When
 		const event = new Event("load")
@@ -264,7 +315,7 @@ describe('Wrapper class', () => {
 
 		// Then
 		expect(builder).toHaveBeenCalledTimes(1)
-		expect(appendChildSpy).not.toHaveBeenCalled()
+		expect(queryScriptTag()).toBeNull()
 	})
 
 	it('aborts reload if script tag is not actual script', () => {
@@ -280,7 +331,7 @@ describe('Wrapper class', () => {
 
 		// Then
 		expect(builder).toHaveBeenCalledTimes(1)
-		expect(appendChildSpy).not.toHaveBeenCalled()
+		expect(queryScriptTag()).toBeNull()
 	})
 
 	it('aborts reload if no script tag', () => {
@@ -292,17 +343,14 @@ describe('Wrapper class', () => {
 
 		// Then
 		expect(builder).toHaveBeenCalledTimes(1)
-		expect(appendChildSpy).not.toHaveBeenCalled()
+		expect(queryScriptTag()).toBeNull()
 	})
 
 	it('handles no builder', () => {
 		// Given
 		const currentScript = scriptTag()
 		getConstructors.mockReturnValueOnce(undefined)
-		const context = mock<ComponentFramework.Context<unknown>>()
-		const noc = jest.fn().mockName("notifyOutputChanged")
-		const state = mock<ComponentFramework.Dictionary>()
-		const container = document.createElement("div")
+		const {context, noc, state, container} = initMocks()
 
 		// When
 		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
