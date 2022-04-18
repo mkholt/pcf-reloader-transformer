@@ -58,7 +58,7 @@ class TransformerDemo_reloaded implements ComponentFramework.StandardControl<IIn
 }
 export class TransformerDemo extends _pcfReloadLib.ReloaderClass<TransformerDemo_reloaded, IInputs, IOutputs> {
 	constructor() {
-		super("TransformerDemo", "http://localhost:8181", _pcfReloadCurrentScript);
+		super("TransformerDemo", "http://localhost:8181", _pcfReloadCurrentScript, true);
 	}
 }
 _pcfReloadLib.UpdateBuilder("TransformerDemo", () => new TransformerDemo_reloaded)

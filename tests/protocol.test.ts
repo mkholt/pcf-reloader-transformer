@@ -12,15 +12,12 @@ describe('version to protocol mapping', () => {
 	${"0.2.59"}		| ${"WebSocket"}
 	${"1.0.6"}		| ${"WebSocket"}
 	${"1.3.3"}		| ${"WebSocket"}
-	${"1.3.6"}		| ${"WebSocket"}
 	${"1.9.4"}		| ${"WebSocket"}
 	${"1.11.2"}		| ${"WebSocket"}
 	${"1.11.3"}		| ${"BrowserSync"}
-	${"1.11.4"}		| ${"BrowserSync"}
-	${"1.11.8"}		| ${"BrowserSync"}
 	${"1.12.2"}		| ${"BrowserSync"}
 	${"1.13.4"}		| ${"BrowserSync"}
-	${"1.13.6"}		| ${"BrowserSync"}
+	${"1.14.2"}		| ${"BrowserSync"}
 	`('returns the right protocol ($version -> $protocol)', ({ version, protocol }) => {
 		jest.mock('../src/injected/logger', () => ({ log: jest.fn().mockName("logger.log") }))
 		jest.mock('pcf-start/package.json', () => ({ version }))

@@ -71,7 +71,7 @@ var TransformerDemo_reloaded = /** @class */ (function () {
 var TransformerDemo = /** @class */ (function (_super) {
     __extends(TransformerDemo, _super);
     function TransformerDemo() {
-        return _super.call(this, "TransformerDemo", "http://localhost:8181", _pcfReloadCurrentScript) || this;
+        return _super.call(this, "TransformerDemo", "http://localhost:8181", _pcfReloadCurrentScript, true) || this;
     }
     return TransformerDemo;
 }(_pcfReloadLib.ReloaderClass));
