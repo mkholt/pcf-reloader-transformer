@@ -79,7 +79,6 @@ describe('Full sample compile', () => {
 	})
 
 	it('prints warning when skipping certain files', () => {
-
 		const { data, filePath } = readFile(`patched.ts`)
 
 		const pluginOptions: IPluginConfig = { verbose: true, printGenerated: true }
@@ -152,5 +151,29 @@ describe('Full sample compile', () => {
 		const { data: result } = readFile(`index.protocol.js`, '../samples')
 		expect(output.outputText).toBe(result.replace("%%ADDRESS%%", addressOut))
 		expect(log).toHaveBeenCalledWith(`Using protocol: ${protocol}, binding to: ${addressOut}`)
+	})
+
+	it.each`
+		option			| showButton
+		${true}			| ${true}
+		${false}		| ${false}
+		${undefined}	| ${true}
+	`('can toggle force reload button ($option -> $showButton)', ({option, showButton}) => {
+		const { data, filePath } = readFile(`index.ts`)
+
+		const pluginOptions: IPluginConfig = {
+			verbose: true,
+			showForceReload: option
+		}
+
+		const output = ts.transpileModule(data, {
+			fileName: filePath,
+			transformers: {
+				before: [transformer(pluginOptions)]
+			}
+		})
+
+		const { data: result } = readFile(`index.reloadButton.js`, '../samples')
+		expect(output.outputText).toBe(result.replace("'%%SHOWBUTTON%%'", showButton))
 	})
 })

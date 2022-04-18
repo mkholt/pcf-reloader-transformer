@@ -1,6 +1,7 @@
 1.2.0 (2022/xx/xx)
 - Restructure code to wrap in class instead of injecting directly in module (#12)
 - Better handling of error state when reloading
+- Add button to force reload the component (#2)
 
 1.1.2 (2022/02/23)
 - Do not auto-install TS-Patch

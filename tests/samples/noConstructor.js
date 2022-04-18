@@ -57,7 +57,7 @@ var SampleComponent_reloaded = /** @class */ (function () {
 var SampleComponent = /** @class */ (function (_super) {
     __extends(SampleComponent, _super);
     function SampleComponent() {
-        return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript) || this;
+        return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true) || this;
     }
     return SampleComponent;
 }(_pcfReloadLib.ReloaderClass));
