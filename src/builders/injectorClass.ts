@@ -39,7 +39,8 @@ export function buildClass(className: string, wrappedClass: string, opts: IPlugi
 
 	const connectionAddress = getConnectionAddress(opts)
 	const classNameString = toString(className)
-	const superCall = stmt(call(factory.createSuper(), classNameString, toString(connectionAddress), access(currentScriptName)))
+	const showForceReload = opts.showForceReload !== false ? factory.createTrue() : factory.createFalse()
+	const superCall = stmt(call(factory.createSuper(), classNameString, toString(connectionAddress), access(currentScriptName), showForceReload))
 
 	const members = [
 		factory.createConstructorDeclaration(undefined, undefined, [], factory.createBlock([

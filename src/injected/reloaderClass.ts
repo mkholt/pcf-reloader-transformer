@@ -45,14 +45,16 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 	private _wrapped: TBase|undefined
 	private _baseUrl: string
 	private _remoteUrl: string
+	private _showForceReload: boolean
 
 	private _params: ReloadParams<IInputs>|undefined
 
-	constructor(className: string, baseUrl: string, script: HTMLOrSVGScriptElement|null) {
+	constructor(className: string, baseUrl: string, script: HTMLOrSVGScriptElement|null, showForceReload: boolean) {
 		log(`PCF Reloader initialized for ${className}`)
 		this._className = className
 		this._baseUrl = baseUrl
 		this._remoteUrl = isScript(script) ? script.src : ""
+		this._showForceReload = showForceReload
 		this.buildWrapped()
 	}
 
@@ -132,7 +134,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 	}
 
 	private wrapContainer(container?: HTMLDivElement): HTMLDivElement|undefined {
-		if (container) {
+		if (container && this._showForceReload) {
 			const innerContainer = document.createElement("div")
 			innerContainer.setAttribute("data-testid", "component-container")
 			container.replaceChildren(innerContainer, ReloadButton(() => this.reloadComponent()))
@@ -140,7 +142,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 			return innerContainer
 		}
 
-		return undefined
+		return this._showForceReload ? undefined : container
 	}
 
 	/** Wrapped methods */

@@ -5,4 +5,5 @@ export type IPluginConfig = PluginConfig & {
 	verbose?: boolean
 	wsAddress?: string
 	useBrowserSync?: boolean
+	showForceReload?: boolean
 }
