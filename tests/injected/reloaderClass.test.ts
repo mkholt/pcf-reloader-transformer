@@ -78,14 +78,20 @@ const scriptTag = (src?: string) => {
 const getScriptTag = () => getByTestId<HTMLScriptElement>(document.body, "reloader-script")
 const queryScriptTag = (): HTMLScriptElement|null => queryByTestId<HTMLScriptElement>(document.body, "reloader-script")
 
-const initMocks = () => {
+const initBaseMocks = () => {
 	const context = mock<ComponentFramework.Context<unknown>>()
 	const noc = jest.fn().mockName("notifyOutputChanged")
 	const state = mock<ComponentFramework.Dictionary>()
+
+	return {context, noc, state}
+}
+
+const initMocks = () => {
+	const baseMocks = initBaseMocks()
 	const container = document.createElement("div")
 	document.body.appendChild(container)
 
-	return {context, noc, state, container}
+	return {...baseMocks, container}
 }
 
 describe('Wrapper class', () => {
@@ -127,7 +133,23 @@ describe('Wrapper class', () => {
 
 		// Then
 		expect(doConnect).toBeCalledWith(reloader, "SOCKET_URL")
-		expect(wrapped.init).toHaveBeenCalledWith(context, noc, state, container)
+		expect(wrapped.init).toHaveBeenCalledWith(context, noc, state, expect.any(HTMLElement))
+		const [, , , containerWrapper] = wrapped.init.mock.calls[0]
+		expect(getByTestId(container, "component-container")).toBe(containerWrapper)
+	})
+
+	it('does not wrap undefined container', () => {
+		// Given
+		const currentScript = scriptTag()
+		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
+		const {context, noc, state} = initBaseMocks()
+
+		// When
+		reloader.init(context, noc, state, undefined)
+
+		// Then
+		expect(doConnect).toBeCalledWith(reloader, "SOCKET_URL")
+		expect(wrapped.init).toHaveBeenCalledWith(context, noc, state, undefined)
 	})
 
 	it('calls updateView', () => {
@@ -221,10 +243,13 @@ describe('Wrapper class', () => {
 
 		// Then
 		expect(builder).toHaveBeenCalledTimes(2)
-		expect(newWrapped.init).toHaveBeenCalledWith(newContext, noc, state, container)
+		expect(newWrapped.init).toHaveBeenCalledWith(newContext, noc, state, expect.any(HTMLElement))
 		expect(newWrapped.updateView).toHaveBeenCalledWith(newContext)
 		expect(logSpy).toHaveBeenCalledWith(`Replacing wrapped instance of COMPONENT_NAME`)
-	})	
+
+		const [, , , containerWrapper] = wrapped.init.mock.calls[0]
+		expect(getByTestId(container, "component-container")).toBe(containerWrapper)
+	})
 
 	it('allows manual reload on error', async () => {
 		// Given
@@ -280,6 +305,25 @@ describe('Wrapper class', () => {
 		expect(newScriptTag.src).toBe(currentScript.src + "#1000")
 		expect(errorSpy).toHaveBeenCalledWith("An error occurred loading the COMPONENT_NAME component:", undefined)
 		expect(queryByTestId(document.body, 'error-container')).toBeNull()
+	})
+
+	it('allows manual reload on button', () => {
+		// Given
+		const currentScript = scriptTag()
+		const reloader = new ReloaderClass("COMPONENT_NAME", "SOCKET_URL", currentScript)
+
+		const {context, noc, state, container} = initMocks()
+		reloader.init(context, noc, state, container)
+
+		jest.useFakeTimers().setSystemTime(1000)
+		const reloadButton = getByTestId(container, "reload-button-button")
+		
+		// When
+		fireEvent.click(reloadButton)
+
+		// Then
+		const newScriptTag = getScriptTag()
+		expect(newScriptTag.src).toBe(currentScript.src + "#1000")
 	})
 
 	it('aborts if reloading without init', () => {

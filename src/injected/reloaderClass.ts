@@ -2,6 +2,8 @@ import {
 	error,
 	log,
 } from './logger';
+import ReloadButton from './reloadButton';
+import Spinner from './spinner';
 import {
 	ComponentWrapper,
 	doConnect,
@@ -66,8 +68,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		}
 
 		if (this._params && this._params.container) {
-			const spinner = this.getSpinner()
-			this._params.container.replaceChildren(spinner)
+			this._params.container.replaceChildren(Spinner())
 		}
 
 		// If _scriptTag is set, we've already reloaded once, remove the tag
@@ -91,46 +92,14 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		window.document.body.appendChild(this._scriptTag)
 	}
 
-	private _spinner: HTMLDivElement|undefined
-	private getSpinner() {
-		if (this._spinner) return this._spinner
-
-		const spinner = document.createElement("div")
-		spinner.style.boxSizing = "border-box"
-		spinner.style.borderRadius = "50%"
-		spinner.style.borderWidth = "1.5px"
-		spinner.style.borderStyle = "solid"
-		spinner.style.borderColor = "rgb(0, 120, 212) rgb(199, 224, 244) rgb(199, 224, 244)"
-		spinner.style.borderImage = "initial"
-		spinner.style.animationName = "reloader-spinner"
-		spinner.style.animationDuration = "1.3s"
-		spinner.style.animationIterationCount = "infinite"
-		spinner.style.animationTimingFunction = "cubic-bezier(0.53, 0.21, 0.29, 0.67)"
-		spinner.style.width = "16px"
-		spinner.style.height = "16px"
-
-		const keyframes = document.createElement("style")
-		keyframes.innerHTML = `
-			@keyframes reloader-spinner {
-				0% {
-					transform: rotate(0deg);
-				}
-				100% {
-					transform: rotate(360deg);
-				}
-			}
-		`
-		spinner.appendChild(keyframes)
-
-		const reloading = document.createElement("div")
-		reloading.setAttribute("data-testid", "reloading-container")
-		reloading.style.display = "flex"
-		reloading.style.gap = "6px"
-		reloading.textContent = "Reloading..."
-		reloading.appendChild(spinner)
-
-		this._spinner = reloading
-		return reloading
+	/**
+	 * Build and update the wrapped instance
+	 */
+	private buildWrapped() {
+		const className = this._className
+		const constructors = window.pcfConstructors || {}
+		const builder = constructors[className]
+		this._wrapped = builder?.call(this) as TBase
 	}
 
 	private onLoadScript() {
@@ -158,33 +127,36 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 
 		const errorDiv = document.createElement("div")
 		errorDiv.setAttribute("data-testid", "error-container")
-		errorDiv.appendChild(button)
-		errorDiv.appendChild(message)
+		errorDiv.append(button, message)
 		this._params.container.replaceChildren(errorDiv)
 	}
 
-	/**
-	 * Build and update the wrapped instance
-	 */
-	private buildWrapped() {
-		const className = this._className
-		const constructors = window.pcfConstructors || {}
-		const builder = constructors[className]
-		this._wrapped = builder?.call(this) as TBase
+	private wrapContainer(container?: HTMLDivElement): HTMLDivElement|undefined {
+		if (container) {
+			const innerContainer = document.createElement("div")
+			innerContainer.setAttribute("data-testid", "component-container")
+			container.replaceChildren(innerContainer, ReloadButton(() => this.reloadComponent()))
+
+			return innerContainer
+		}
+
+		return undefined
 	}
 
 	/** Wrapped methods */
 	init(context: ComponentFramework.Context<IInputs>, notifyOutputChanged?: () => void, state?: ComponentFramework.Dictionary, container?: HTMLDivElement): void {
+		const innerContainer = this.wrapContainer(container)
+
 		this._params = {
 			context: context,
 			notifyOutputChanged: notifyOutputChanged,
 			state: state,
-			container: container
+			container: innerContainer
 		};
 
 		doConnect(this, this._baseUrl);
 
-		this._wrapped?.init(context, notifyOutputChanged, state, container)
+		this._wrapped?.init(context, notifyOutputChanged, state, innerContainer)
 	}
 
 	updateView(context: ComponentFramework.Context<IInputs>): void {
@@ -198,7 +170,6 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 	destroy(): void {
 		// Disconnect from the socket
 		doDisconnect()
-
 
 		// Clean up the parameters
 		this._params = undefined
