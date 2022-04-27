@@ -176,4 +176,22 @@ describe('Full sample compile', () => {
 		const { data: result } = readFile(`index.reloadButton.js`, '../samples')
 		expect(output.outputText).toBe(result.replace("'%%SHOWBUTTON%%'", showButton))
 	})
+
+	it('can inject debugger calls', () => {
+		const { data, filePath } = readFile(`index.ts`)
+		const pluginOptions: IPluginConfig = {
+			verbose: true,
+			debug: true,
+		}
+
+		const output = ts.transpileModule(data, {
+			fileName: filePath,
+			transformers: {
+				before: [transformer(pluginOptions)]
+			}
+		})
+
+		const { data: result } = readFile(`index.debugger.js`, '../samples')
+		expect(output.outputText).toBe(result)
+	})
 })

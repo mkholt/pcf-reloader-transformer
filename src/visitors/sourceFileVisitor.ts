@@ -79,7 +79,7 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 		const reloaderClass = buildClass(className, wrappedName, opts)
 
 		// Build the code for instantiating
-		const updateBuilder = buildBuilderUpdate(className, wrappedName)
+		const updateBuilder = buildBuilderUpdate(className, wrappedName, opts)
 		
 
 		// Return the updated source

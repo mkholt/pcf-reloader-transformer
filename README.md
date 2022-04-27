@@ -86,11 +86,19 @@ The transformer supports the following configuration settings.
 The settings are specified as part of the plugin specification in _tsconfig.json_
 
 The following settings are available:
+- [Debug](#debug)
 - [Print Generated](#print-generated)
 - [Show Force Reload](#show-force-reload)
 - [Use Browser Sync](#use-browser-sync)
 - [Verbose](#verbose)
 - [WS Address](#ws-address)
+
+## Debug
+**Setting**: `debug`<br>
+**Type**: boolean<br>
+**Default**: `false`<br>
+**Description**:<br>
+  If `true`, inject calls to the debugger to allow stepping into the dynamically loaded code.
 
 ### Print Generated
 **Setting**: `printGenerated`<br>

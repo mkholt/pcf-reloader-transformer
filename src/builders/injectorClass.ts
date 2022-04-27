@@ -37,6 +37,8 @@ export function buildClass(className: string, wrappedClass: string, opts: IPlugi
 		])
 	])
 
+	const debuggerCall = opts.debug ? [factory.createDebuggerStatement()] : []
+
 	const connectionAddress = getConnectionAddress(opts)
 	const classNameString = toString(className)
 	const showForceReload = opts.showForceReload !== false ? factory.createTrue() : factory.createFalse()
@@ -44,6 +46,7 @@ export function buildClass(className: string, wrappedClass: string, opts: IPlugi
 
 	const members = [
 		factory.createConstructorDeclaration(undefined, undefined, [], factory.createBlock([
+			...debuggerCall,
 			superCall
 		], true))
 	]
