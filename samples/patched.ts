@@ -7,7 +7,7 @@ import {
 } from './generated/ManifestTypes';
 
 const _pcfReloadCurrentScript = document.currentScript;
-class TransformerDemo_reloaded implements ComponentFramework.StandardControl<IInputs, IOutputs> {
+class SampleComponent_reloaded implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 	private _context: ComponentFramework.Context<IInputs>;
 	private _container: HTMLDivElement;
 	/**
@@ -56,9 +56,9 @@ class TransformerDemo_reloaded implements ComponentFramework.StandardControl<IIn
 		this._container.innerHTML = '';
 	}
 }
-export class TransformerDemo extends _pcfReloadLib.ReloaderClass<TransformerDemo_reloaded, IInputs, IOutputs> {
+export class SampleComponent extends _pcfReloadLib.ReloaderClass<SampleComponent_reloaded, IInputs, IOutputs> {
 	constructor() {
-		super("TransformerDemo", "http://localhost:8181", _pcfReloadCurrentScript, true);
+		super("SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true);
 	}
 }
-_pcfReloadLib.UpdateBuilder("TransformerDemo", () => new TransformerDemo_reloaded)
+_pcfReloadLib.UpdateBuilder("SampleComponent", () => new SampleComponent_reloaded)

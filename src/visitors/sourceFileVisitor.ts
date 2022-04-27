@@ -58,8 +58,14 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 		// Get the current script element
 		const currentScript = createCurrentScriptAssignment()
 
-		// Rename the class by postfixing _reloaded
-		const wrappedName = `${className}_reloaded`
+		// Calculate random hash
+		const hash = Math.random().toString(36).slice(-4)
+
+		// Rename the class by postfixing _reloaded_<hash>
+		const wrappedName = `${className}_reloaded_${hash}`
+		if (opts.verbose) {
+			log("Wrapped classname:", wrappedName)
+		}
 
 		// Remove the export modifier from the class, we only want to export ourselves
 		const modifiers = node.modifiers?.filter(m => m.kind !== SyntaxKind.ExportKeyword)
@@ -80,7 +86,6 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 
 		// Build the code for instantiating
 		const updateBuilder = buildBuilderUpdate(className, wrappedName, opts)
-		
 
 		// Return the updated source
 		return [

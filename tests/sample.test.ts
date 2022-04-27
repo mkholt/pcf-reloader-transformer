@@ -3,20 +3,30 @@ import path from 'path';
 import ts from 'typescript';
 
 import transformer from '../src/index';
-import { log } from '../src/injected';
+import * as logger from '../src/injected/logger';
 import { IPluginConfig } from '../src/pluginConfig';
 import { readFile } from './utils/common';
 
 const writeFileSpy = jest.spyOn(fs, 'writeFileSync').mockImplementation().mockName("fs.writeFileSync")
 
-jest.mock('../src/injected/logger', () => ({
-	log: jest.fn().mockName("logger.log")
-}))
+let wrappedClassName: string|undefined
+const logSpy = jest.spyOn(logger, 'log').mockImplementation((...args) => {
+	if (args[0] === "Wrapped classname:") {
+		wrappedClassName = args[1]
+	}
+}).mockName("logger.log")
+
+const getResult = (f: string) => {
+	const { data: result } = readFile(`${f}.js`, '../samples')
+	const hash = f == "patched" ? "" : (wrappedClassName ?? "_FAIL").slice(-5)
+	return result.replace(/_HASH/g, hash);
+}
 
 describe('Full sample compile', () => {
 	beforeEach(() => {
 		// Reset the spys and mocks
 		jest.clearAllMocks()
+		wrappedClassName = undefined
 	})
 
 	test.each([
@@ -29,7 +39,9 @@ describe('Full sample compile', () => {
 	])('can handle full file (%s)', (f) => {
 		const { data, filePath } = readFile(`${f}.ts`)
 
-		const pluginOptions = {}
+		const pluginOptions: IPluginConfig = {
+			verbose: true
+		}
 
 		const output = ts.transpileModule(data, {
 			fileName: filePath,
@@ -38,9 +50,8 @@ describe('Full sample compile', () => {
 			}
 		})
 
-		const { data: result } = readFile(`${f}.js`, '../samples')
-
-		expect(output.outputText).toBe(result)
+		const resultText = getResult(f)
+		expect(output.outputText).toBe(resultText)
 	})
 
 
@@ -74,8 +85,8 @@ describe('Full sample compile', () => {
 
 		const seps = filePath.replace(/\\/g, "/")
 		const np = path.resolve(path.dirname(filePath), 'index.generated.ts')
-		expect(log).toHaveBeenCalledWith(`Found class: SampleComponent in ${seps}:3`)
-		expect(log).toHaveBeenCalledWith(`Generated file written to: ${np}`)
+		expect(logSpy).toHaveBeenCalledWith(`Found class: SampleComponent in ${seps}:3`)
+		expect(logSpy).toHaveBeenCalledWith(`Generated file written to: ${np}`)
 	})
 
 	it('prints warning when skipping certain files', () => {
@@ -91,7 +102,7 @@ describe('Full sample compile', () => {
 		})
 
 		const replaced = filePath.replace(/\\/g, "/")
-		expect(log).toHaveBeenCalledWith(`PCF Reloader already injected, skipping ${replaced}`)
+		expect(logSpy).toHaveBeenCalledWith(`PCF Reloader already injected, skipping ${replaced}`)
 		expect(writeFileSpy).toHaveBeenCalledTimes(0)
 	})
 
@@ -115,15 +126,15 @@ describe('Full sample compile', () => {
 			}
 		})
 
-		const { data: result } = readFile(`index.protocol.js`, '../samples')
+		const result = getResult("index.protocol")
 		expect(output.outputText).toBe(result.replace("%%ADDRESS%%", address))
 
 		const matcher = useBrowserSync === undefined
-			? expect(log)
-			: expect(log).not
+			? expect(logSpy)
+			: expect(logSpy).not
 		matcher.toHaveBeenCalledWith("Detected PCF Start version", expect.any(String))
 
-		expect(log).toHaveBeenCalledWith(`Using protocol: ${protocol}, binding to: ${address}`)
+		expect(logSpy).toHaveBeenCalledWith(`Using protocol: ${protocol}, binding to: ${address}`)
 	})
 
 	it.each`
@@ -148,9 +159,9 @@ describe('Full sample compile', () => {
 			}
 		})
 
-		const { data: result } = readFile(`index.protocol.js`, '../samples')
+		const result = getResult("index.protocol")
 		expect(output.outputText).toBe(result.replace("%%ADDRESS%%", addressOut))
-		expect(log).toHaveBeenCalledWith(`Using protocol: ${protocol}, binding to: ${addressOut}`)
+		expect(logSpy).toHaveBeenCalledWith(`Using protocol: ${protocol}, binding to: ${addressOut}`)
 	})
 
 	it.each`
@@ -173,7 +184,7 @@ describe('Full sample compile', () => {
 			}
 		})
 
-		const { data: result } = readFile(`index.reloadButton.js`, '../samples')
+		const result = getResult("index.reloadButton")
 		expect(output.outputText).toBe(result.replace("'%%SHOWBUTTON%%'", showButton))
 	})
 
@@ -191,7 +202,7 @@ describe('Full sample compile', () => {
 			}
 		})
 
-		const { data: result } = readFile(`index.debugger.js`, '../samples')
+		const result = getResult("index.debugger")
 		expect(output.outputText).toBe(result)
 	})
 })
