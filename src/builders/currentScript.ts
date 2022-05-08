@@ -1,10 +1,9 @@
 import {
 	access,
+	currentScriptName,
 	declareConst,
-} from "../lib";
-import { id } from "../lib/helpers";
-
-export const currentScriptName = id("_pcfReloadCurrentScript")
+} from '../lib';
+import { id } from '../lib/helpers';
 
 /**
  * Create the constant for getting the reference to the current script tag

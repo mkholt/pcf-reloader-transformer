@@ -66,4 +66,4 @@ var SampleComponent = /** @class */ (function (_super) {
     return SampleComponent;
 }(_pcfReloadLib.ReloaderClass));
 exports.SampleComponent = SampleComponent;
-_pcfReloadLib.UpdateBuilder("SampleComponent", function () { return new SampleComponent_reloaded_HASH; })
+_pcfReloadLib.UpdateBuilder("SampleComponent", function () { _pcfReloadLib.log("Builder called for:", "SampleComponent_reloaded_HASH"); return new SampleComponent_reloaded_HASH; })

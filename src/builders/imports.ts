@@ -5,17 +5,12 @@ import {
 	SourceFile,
 } from 'typescript';
 
-import * as inject from '../injected';
 import {
-	access,
-	id,
+	injectLibName,
 	printNode,
 	toString,
 } from '../lib';
 
-export type MethodName = keyof typeof inject
-
-const injectLibName = id("_pcfReloadLib")
 const injectLibSource = "pcf-reloader-transformer/dist/injected"
 
 /**
@@ -57,10 +52,3 @@ export const hasLibraryImport = (sourceFile: SourceFile) => {
 	return !!existingImportDecl
 }
 
-/**
- * Build access call to the given method in the injected code.
- * @param method The name of the method to call in the injected code
- * @returns An access call to the given method
- */
-export const accessLib = (method: MethodName) =>
-	access(injectLibName, id(method))

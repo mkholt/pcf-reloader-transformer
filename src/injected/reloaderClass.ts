@@ -108,6 +108,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		log(`Replacing wrapped instance of ${this._className}`)
 		this.buildWrapped()
 		if (!this._params || !this._wrapped) return;
+		log(`Instance replaced, calling init and updateView`)
 
 		// The new instance was initialized, call it with the last known state of the component
 		const { context, notifyOutputChanged, state, container } = this._params

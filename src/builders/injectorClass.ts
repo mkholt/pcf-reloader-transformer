@@ -7,7 +7,9 @@ import {
 import { log } from '../injected';
 import {
 	access,
+	accessLib,
 	call,
+	currentScriptName,
 	id,
 	stmt,
 	toString,
@@ -17,8 +19,6 @@ import {
 	defaultAddress,
 	getProtocol,
 } from '../protocol';
-import { currentScriptName } from './currentScript';
-import { accessLib } from './imports';
 
 function getConnectionAddress(opts: IPluginConfig): string {
 	const protocol = getProtocol(opts)
