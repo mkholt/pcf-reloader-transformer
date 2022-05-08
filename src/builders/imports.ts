@@ -1,11 +1,15 @@
 import {
+	ClassDeclaration,
 	factory,
 	forEachChild,
 	isImportDeclaration,
+	isTypeReferenceNode,
 	SourceFile,
+	SyntaxKind,
 } from 'typescript';
 
 import {
+	baseClass,
 	injectLibName,
 	printNode,
 	toString,
@@ -52,3 +56,30 @@ export const hasLibraryImport = (sourceFile: SourceFile) => {
 	return !!existingImportDecl
 }
 
+export type ParameterNames = {
+	input: string
+	output: string
+}
+
+export const getParameterNames = (node: ClassDeclaration): ParameterNames|undefined => {
+	// We're only interested in "implements" clauses, not "extends"
+	const clause = node.heritageClauses?.find(h => h.token === SyntaxKind.ImplementsKeyword)
+	if (!clause) return undefined
+
+	// We want it to implement "ComponentFramework.StandardControl"
+	const controlType = clause.types.find(t => t.expression.getText() === baseClass)
+	if (!controlType) return undefined
+
+	// The control takes 2 parameters
+	if (controlType.typeArguments?.length != 2) return undefined
+
+	// The parameters must be type references
+	const [input, output] = controlType.typeArguments
+	if (!isTypeReferenceNode(input) || !isTypeReferenceNode(output)) return undefined
+
+	// Return the names of the type references
+	return {
+		input: input.getText(),
+		output: output.getText()
+	}
+}

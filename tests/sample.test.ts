@@ -33,9 +33,10 @@ describe('Full sample compile', () => {
 		'index',
 		'initialClass',
 		'noConstructor',
+		'noExport',
 		'notMatching',
 		'patched',
-		'noExport'
+		'renamedParameters',
 	])('can handle full file (%s)', (f) => {
 		const { data, filePath } = readFile(`${f}.ts`)
 

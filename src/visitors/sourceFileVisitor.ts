@@ -1,4 +1,5 @@
-import ts, {
+import {
+	ClassDeclaration,
 	factory,
 	isClassDeclaration,
 	Node,
@@ -9,6 +10,8 @@ import ts, {
 import {
 	createCurrentScriptAssignment,
 	createLibraryImport,
+	getParameterNames,
+	ParameterNames,
 } from '../builders';
 import { buildBuilderUpdate } from '../builders/builder';
 import { buildClass } from '../builders/injectorClass';
@@ -16,37 +19,29 @@ import { log } from '../injected/logger';
 import { id } from '../lib';
 import { IPluginConfig } from '../pluginConfig';
 
-type hasName = {
-	name: Exclude<ts.ClassDeclaration['name'], undefined>
-}
-const isValidNode = (node: Node): node is ts.ClassDeclaration & hasName => {
+const isValidNode = (node: Node): [ClassDeclaration, string, ParameterNames]|[] => {
 	// Check: Not a class, skip it
-	if (!isClassDeclaration(node)) return false
+	if (!isClassDeclaration(node)) return []
 
-	// Check: Implements ComponentFramework.StandardControl
-	const implement = node.heritageClauses?.filter(h => h.token == SyntaxKind.ImplementsKeyword
-		&& h.types.find(t => t.getText() === "ComponentFramework.StandardControl<IInputs, IOutputs>"))
-
-	if (!implement?.length) return false
+	// Check: Implements ComponentFramework.StandardControl<IInputs, IOutputs>
+	const parameterNames = getParameterNames(node)
+	if (!parameterNames) return []
 
 	// Check: Has class name so we can construct meaninfully
-	const className = node.name
-	if (!className) return false
+	const className = node.name?.getText()
+	if (!className) return []
 
-	return true
+	return [node, className, parameterNames]
 }
 
 export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 	(node: Node): Node[] | Node => {
-		if (!isValidNode(node)) {
-			return node
-		}
-
-		const className = node.name.getText()
+		const [classNode, className, parameterNames] = isValidNode(node)
+		if (!classNode || !className || !parameterNames) return node
 
 		if (opts.verbose) {
 			const fileName = sourceFile.fileName
-			const pos = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+			const pos = sourceFile.getLineAndCharacterOfPosition(classNode.getStart());
 			log(`Found class: ${className} in ${fileName}:${pos.line + 1}`)
 		}
 
@@ -68,21 +63,21 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 		}
 
 		// Remove the export modifier from the class, we only want to export ourselves
-		const modifiers = node.modifiers?.filter(m => m.kind !== SyntaxKind.ExportKeyword)
+		const modifiers = classNode.modifiers?.filter(m => m.kind !== SyntaxKind.ExportKeyword)
 
 		// Build the class from the updated members
 		const newClass = factory.updateClassDeclaration(
-			node,
-			node.decorators,
+			classNode,
+			classNode.decorators,
 			modifiers,
 			id(wrappedName),
-			node.typeParameters,
-			node.heritageClauses,
-			node.members
+			classNode.typeParameters,
+			classNode.heritageClauses,
+			classNode.members
 		)
 
 		// Build the injected class
-		const reloaderClass = buildClass(className, wrappedName, opts)
+		const reloaderClass = buildClass(className, parameterNames, opts)
 
 		// Build the code for instantiating
 		const updateBuilder = buildBuilderUpdate(className, wrappedName, opts)

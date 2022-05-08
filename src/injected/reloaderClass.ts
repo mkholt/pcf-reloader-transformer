@@ -40,9 +40,9 @@ export const UpdateBuilder = <TBase extends ComponentFramework.StandardControl<u
 	}
 }
 
-export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInputs, IOutputs>, IInputs, IOutputs> implements ComponentFramework.StandardControl<IInputs, IOutputs>, ComponentWrapper {
+export class ReloaderClass<IInputs, IOutputs> implements ComponentFramework.StandardControl<IInputs, IOutputs>, ComponentWrapper {
 	private _className: string
-	private _wrapped: TBase|undefined
+	private _wrapped: ComponentFramework.StandardControl<unknown, unknown>|undefined
 	private _baseUrl: string
 	private _remoteUrl: string
 	private _showForceReload: boolean
@@ -101,7 +101,7 @@ export class ReloaderClass<TBase extends ComponentFramework.StandardControl<IInp
 		const className = this._className
 		const constructors = window.pcfConstructors || {}
 		const builder = constructors[className]
-		this._wrapped = builder?.call(this) as TBase
+		this._wrapped = builder?.call(this)
 	}
 
 	private onLoadScript() {
