@@ -35,6 +35,10 @@ describe('Full sample compile', () => {
 		'noConstructor',
 		'noExport',
 		'notMatching',
+		'notMatchingImplements',
+		'notMatchingImplementsNotTypeReference',
+		'notMatchingImplementsWithoutTypes',
+		'notMatchingImplementsWrongTypeCount',
 		'patched',
 		'renamedParameters',
 	])('can handle full file (%s)', (f) => {
