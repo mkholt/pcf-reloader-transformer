@@ -60,9 +60,12 @@ var SampleComponent_reloaded_HASH = /** @class */ (function () {
 var SampleComponent = /** @class */ (function (_super) {
     __extends(SampleComponent, _super);
     function SampleComponent() {
-        return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true) || this;
+        var _this = this;
+        debugger;
+        _this = _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true) || this;
+        return _this;
     }
     return SampleComponent;
 }(_pcfReloadLib.ReloaderClass));
 exports.SampleComponent = SampleComponent;
-_pcfReloadLib.UpdateBuilder("SampleComponent", function () { _pcfReloadLib.log("Builder called for:", "SampleComponent_reloaded_HASH"); return new SampleComponent_reloaded_HASH; })
+_pcfReloadLib.UpdateBuilder("SampleComponent", function () { _pcfReloadLib.log("Builder called for:", "SampleComponent_reloaded_HASH"); debugger; return new SampleComponent_reloaded_HASH; })

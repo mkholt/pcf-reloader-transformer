@@ -7,7 +7,9 @@ import {
 import { log } from '../injected';
 import {
 	access,
+	accessLib,
 	call,
+	currentScriptName,
 	id,
 	stmt,
 	toString,
@@ -17,8 +19,7 @@ import {
 	defaultAddress,
 	getProtocol,
 } from '../protocol';
-import { currentScriptName } from './currentScript';
-import { accessLib } from './imports';
+import { ParameterNames } from './imports';
 
 function getConnectionAddress(opts: IPluginConfig): string {
 	const protocol = getProtocol(opts)
@@ -28,14 +29,15 @@ function getConnectionAddress(opts: IPluginConfig): string {
 	return address
 }
 
-export function buildClass(className: string, wrappedClass: string, opts: IPluginConfig): ClassDeclaration {
+export function buildClass(className: string, parameterNames: ParameterNames, opts: IPluginConfig): ClassDeclaration {
 	const heritage = factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
 		factory.createExpressionWithTypeArguments(accessLib("ReloaderClass"), [
-			factory.createTypeReferenceNode(wrappedClass),
-			factory.createTypeReferenceNode(id("IInputs")),
-			factory.createTypeReferenceNode(id("IOutputs"))
+			factory.createTypeReferenceNode(id(parameterNames.input)),
+			factory.createTypeReferenceNode(id(parameterNames.output))
 		])
 	])
+
+	const debuggerCall = opts.debug ? [factory.createDebuggerStatement()] : []
 
 	const connectionAddress = getConnectionAddress(opts)
 	const classNameString = toString(className)
@@ -44,6 +46,7 @@ export function buildClass(className: string, wrappedClass: string, opts: IPlugi
 
 	const members = [
 		factory.createConstructorDeclaration(undefined, undefined, [], factory.createBlock([
+			...debuggerCall,
 			superCall
 		], true))
 	]

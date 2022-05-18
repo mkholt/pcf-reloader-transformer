@@ -10,6 +10,11 @@ import {
 	ThisExpression,
 } from 'typescript';
 
+import * as inject from '../injected';
+import { injectLibName } from './names';
+
+export type MethodName = keyof typeof inject
+
 export const id = factory.createIdentifier
 export const toString = factory.createStringLiteral
 
@@ -35,7 +40,17 @@ export const access = (...parts: AccessPart[]): AccessExpression => {
 	)
 }
 
+/**
+ * Build access call to the given method in the injected code.
+ * @param method The name of the method to call in the injected code
+ * @returns An access call to the given method
+ */
+export const accessLib = (method: MethodName) =>
+	access(injectLibName, id(method))
+
 export const call = (callee: Expression, ...args: Expression[]) =>
 	factory.createCallExpression(callee, undefined, args)
 
 export const stmt = (expr: Expression) => factory.createExpressionStatement(expr)
+
+export const writeLog = (...args: string[]) => call(accessLib("log"), ...args.map(a => toString(a)))
