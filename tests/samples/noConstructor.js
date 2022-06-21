@@ -60,6 +60,6 @@ var SampleComponent = /** @class */ (function (_super) {
         return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true) || this;
     }
     return SampleComponent;
-}(_pcfReloadLib.ReloaderClass));
+}(_pcfReloadLib.StandardControl));
 exports.SampleComponent = SampleComponent;
 _pcfReloadLib.UpdateBuilder("SampleComponent", function () { _pcfReloadLib.log("Builder called for:", "SampleComponent_reloaded_HASH"); return new SampleComponent_reloaded_HASH; })

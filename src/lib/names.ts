@@ -1,6 +1,7 @@
 import { factory } from 'typescript';
 
-export const baseClass = "ComponentFramework.StandardControl"
+export const standardControl = "ComponentFramework.StandardControl"
+export const reactControl = "ComponentFramework.ReactControl"
 export const inputParam = "IInputs"
 export const outputParam = "IOutputs"
 

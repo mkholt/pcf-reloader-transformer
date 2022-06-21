@@ -8,10 +8,10 @@ import {
 } from 'typescript';
 
 import {
+	ControlHeritage,
 	createCurrentScriptAssignment,
 	createLibraryImport,
 	getParameterNames,
-	ParameterNames,
 } from '../builders';
 import { buildBuilderUpdate } from '../builders/builder';
 import { buildClass } from '../builders/injectorClass';
@@ -19,7 +19,7 @@ import { log } from '../injected/logger';
 import { id } from '../lib';
 import { IPluginConfig } from '../pluginConfig';
 
-const isValidNode = (node: Node): [ClassDeclaration, string, ParameterNames]|[] => {
+const isValidNode = (node: Node): [ClassDeclaration, string, ControlHeritage]|[] => {
 	// Check: Not a class, skip it
 	if (!isClassDeclaration(node)) return []
 

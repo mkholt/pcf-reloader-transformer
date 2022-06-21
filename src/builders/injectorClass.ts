@@ -19,7 +19,7 @@ import {
 	defaultAddress,
 	getProtocol,
 } from '../protocol';
-import { ParameterNames } from './imports';
+import { ControlHeritage } from './imports';
 
 function getConnectionAddress(opts: IPluginConfig): string {
 	const protocol = getProtocol(opts)
@@ -29,11 +29,11 @@ function getConnectionAddress(opts: IPluginConfig): string {
 	return address
 }
 
-export function buildClass(className: string, parameterNames: ParameterNames, opts: IPluginConfig): ClassDeclaration {
+export function buildClass(className: string, parameters: ControlHeritage, opts: IPluginConfig): ClassDeclaration {
 	const heritage = factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
-		factory.createExpressionWithTypeArguments(accessLib("ReloaderClass"), [
-			factory.createTypeReferenceNode(id(parameterNames.input)),
-			factory.createTypeReferenceNode(id(parameterNames.output))
+		factory.createExpressionWithTypeArguments(accessLib(parameters.controlType), [
+			factory.createTypeReferenceNode(id(parameters.input)),
+			factory.createTypeReferenceNode(id(parameters.output))
 		])
 	])
 

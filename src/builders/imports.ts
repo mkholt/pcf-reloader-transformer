@@ -8,10 +8,12 @@ import {
 	SyntaxKind,
 } from 'typescript';
 
+import * as Controls from '../injected/controls';
 import {
-	baseClass,
 	injectLibName,
 	printNode,
+	reactControl,
+	standardControl,
 	toString,
 } from '../lib';
 
@@ -56,29 +58,39 @@ export const hasLibraryImport = (sourceFile: SourceFile) => {
 	return !!existingImportDecl
 }
 
-export type ParameterNames = {
+export type ControlType = keyof Pick<typeof Controls, "ReactControl"|"StandardControl">
+
+export type ControlHeritage = {
+	controlType: ControlType
 	input: string
 	output: string
 }
 
-export const getParameterNames = (node: ClassDeclaration): ParameterNames|undefined => {
+export const getParameterNames = (node: ClassDeclaration): ControlHeritage|undefined => {
 	// We're only interested in "implements" clauses, not "extends"
 	const clause = node.heritageClauses?.find(h => h.token === SyntaxKind.ImplementsKeyword)
 	if (!clause) return undefined
 
-	// We want it to implement "ComponentFramework.StandardControl"
-	const controlType = clause.types.find(t => t.expression.getText() === baseClass)
-	if (!controlType) return undefined
+	// We want it to implement "ComponentFramework.StandardControl" or "ComponentFramework.ReactControl"
+	const actualControlType = clause.types.find(t => [standardControl, reactControl].includes(t.expression.getText()))
+	if (!actualControlType) return undefined
 
 	// The control takes 2 parameters
-	if (controlType.typeArguments?.length != 2) return undefined
+	if (actualControlType.typeArguments?.length != 2) return undefined
 
 	// The parameters must be type references
-	const [input, output] = controlType.typeArguments
+	const [input, output] = actualControlType.typeArguments
 	if (!isTypeReferenceNode(input) || !isTypeReferenceNode(output)) return undefined
+
+	// Map the control type
+	const controlTypeName = actualControlType.expression.getText()
+	const controlType: ControlType = standardControl === controlTypeName
+		? "StandardControl"
+		: "ReactControl"
 
 	// Return the names of the type references
 	return {
+		controlType: controlType,
 		input: input.getText(),
 		output: output.getText()
 	}

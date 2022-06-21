@@ -56,7 +56,7 @@ class SampleComponent_reloaded implements ComponentFramework.StandardControl<IIn
 		this._container.innerHTML = '';
 	}
 }
-export class SampleComponent extends _pcfReloadLib.ReloaderClass<IInputs, IOutputs> {
+export class SampleComponent extends _pcfReloadLib.StandardControl<IInputs, IOutputs> {
 	constructor() {
 		super("SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true);
 	}
