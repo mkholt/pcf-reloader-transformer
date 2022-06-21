@@ -7,5 +7,5 @@ const timestamp = () => {
 
 const prefix = () => ["[" + timestamp() + "]", "[pcf-reloader]"]
 
-export const log = (...message: string[]) => console.log(...prefix(), ...message)
-export const error = (...message: string[]) => console.error(...prefix(), ...message)
+export const log = console.log.bind(console, ...prefix())
+export const error = console.error.bind(console, ...prefix())
