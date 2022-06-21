@@ -1,34 +1,25 @@
-import socket from 'socket.io-client';
+import socket, { Socket } from 'socket.io-client';
 
 import { log } from './logger';
 
-type SocketIo = {
-	on: (eventName: string, callback: (...args: unknown[]) => void) => SocketIo
-	onevent: (packet: { data?: unknown }) => void
-	close: () => SocketIo
-}
-
-let _socket: SocketIo|WebSocket|undefined
+let _socket: Socket|WebSocket|undefined
 
 const bsConnect = (baseUrl: string, onReload: () => void, debug?: boolean) => {
-	const socketConfig = {
-		"reconnectionAttempts": 50,
-		"path": "/browser-sync/socket.io",
-	}
 	const socketUrl = baseUrl + '/browser-sync'
 
-	_socket = socket(socketUrl, socketConfig) as SocketIo
+	_socket = socket(socketUrl, {
+		reconnectionAttempts: 50,
+		path: "/browser-sync/socket.io"
+	})
+	
 	_socket.on('disconnect', () => log("BrowserSync disconnected"))
 	_socket.on('connect', () => log("BrowserSync connected"))
 	_socket.on('browser:reload', onReload)
 
 	if (debug) {
-		const onEvent = _socket.onevent
-		_socket.onevent = function(packet) {
-			onEvent.call(this, packet);
-
-			log("> " + JSON.stringify(packet.data))
-		};
+		_socket.onAny((...args: unknown[]) => {
+			log("> " + JSON.stringify(args))
+		})
 	}
 
 	return socketUrl
@@ -77,7 +68,7 @@ export const doConnect = (reloader: ComponentWrapper, baseUrl: string, debug?: b
 	log(`Live reload enabled on ${address}`)	
 }
 
-const isWebSocket = (s: WebSocket|SocketIo): s is WebSocket => !!(s as WebSocket).onmessage
+const isWebSocket = (s: WebSocket|Socket): s is WebSocket => !!(s as WebSocket).onmessage
 
 /**
  * Disconnect from any connected socket
