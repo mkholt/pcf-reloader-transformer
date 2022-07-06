@@ -17,6 +17,7 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
 var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
+var _pcfReloadControl = require("pcf-reloader-transformer/dist/injected/controls");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent_reloaded_HASH = /** @class */ (function () {
     /**
@@ -63,6 +64,6 @@ var SampleComponent = /** @class */ (function (_super) {
         return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, '%%SHOWBUTTON%%') || this;
     }
     return SampleComponent;
-}(_pcfReloadLib.StandardControl));
+}(_pcfReloadControl.StandardControl));
 exports.SampleComponent = SampleComponent;
 _pcfReloadLib.UpdateBuilder("SampleComponent", function () { _pcfReloadLib.log("Builder called for:", "SampleComponent_reloaded_HASH"); return new SampleComponent_reloaded_HASH; })
