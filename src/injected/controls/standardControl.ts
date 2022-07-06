@@ -3,6 +3,7 @@ import {
 	log,
 } from '../logger';
 import ReloadButton from '../reloadButton';
+import Spinner from '../spinner';
 import { ComponentWrapper } from '../sync';
 import { BaseControl } from './base';
 
@@ -41,6 +42,10 @@ export class StandardControl<IInputs, IOutputs> extends BaseControl<ControlType<
 		errorDiv.setAttribute("data-testid", "error-container")
 		errorDiv.append(button, message)
 		this.params.container.replaceChildren(errorDiv)
+	}
+
+	protected showSpinner(): void {
+		this.params?.container?.replaceChildren(Spinner())
 	}
 
 	protected wrapContainer(container?: HTMLDivElement): HTMLDivElement|undefined {

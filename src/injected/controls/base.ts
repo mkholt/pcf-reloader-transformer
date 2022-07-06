@@ -1,5 +1,4 @@
 import { log } from '../logger';
-import Spinner from '../spinner';
 import {
 	ComponentWrapper,
 	doConnect,
@@ -66,9 +65,8 @@ export abstract class BaseControl<ControlType extends WrappedControl, IInputs> i
 			this.wrapped.destroy()
 		}
 
-		if (this.params && this.params.container) {
-			this.params.container.replaceChildren(Spinner())
-		}
+		// Call the implementing class to show a suiting spinner
+		this.showSpinner()
 
 		// If _scriptTag is set, we've already reloaded once, remove the tag
 		if (this._scriptTag) {
@@ -105,6 +103,7 @@ export abstract class BaseControl<ControlType extends WrappedControl, IInputs> i
 
 	protected abstract onLoadScript(): void
 	protected abstract onScriptError(e: ErrorEvent): void
+	protected abstract showSpinner(): void
 	protected abstract wrapContainer(container?: HTMLDivElement): HTMLDivElement|undefined
 
 	/** Wrapped methods */

@@ -31,4 +31,10 @@ export class ReactControl<IInputs, IOutputs> extends BaseControl<ComponentType<I
 	protected wrapContainer(): undefined {
 		return undefined
 	}
+	protected showSpinner(): void {
+		// Tell the wrapper to show the spinner
+		this._componentRef?.setState({
+			mode: ComponentMode.Spinner
+		})
+	}
 }
