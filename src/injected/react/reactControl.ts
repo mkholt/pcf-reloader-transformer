@@ -1,14 +1,14 @@
 import React from 'react';
 
-import ComponentWrapper, {
-	ComponentMode,
-	ComponentWrapperProps,
-} from '../components/componentWrapper';
+import { BaseControl } from '../controls/base';
 import {
 	error,
 	log,
 } from '../logger';
-import { BaseControl } from './base';
+import ComponentWrapper, {
+	ComponentMode,
+	ComponentWrapperProps,
+} from './components/componentWrapper';
 
 type ComponentType<IInputs, IOutputs> = ComponentFramework.ReactControl<IInputs, IOutputs>
 

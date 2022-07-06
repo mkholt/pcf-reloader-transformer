@@ -7,3 +7,4 @@ export const outputParam = "IOutputs"
 
 export const currentScriptName = factory.createIdentifier("_pcfReloadCurrentScript")
 export const injectLibName = factory.createIdentifier("_pcfReloadLib")
+export const controlLibName = factory.createIdentifier("_pcfReloadControl")

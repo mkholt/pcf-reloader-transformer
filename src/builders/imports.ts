@@ -8,8 +8,9 @@ import {
 	SyntaxKind,
 } from 'typescript';
 
-import * as Controls from '../injected/controls';
 import {
+	controlLibName,
+	ControlName,
 	injectLibName,
 	printNode,
 	reactControl,
@@ -18,16 +19,23 @@ import {
 } from '../lib';
 
 const injectLibSource = "pcf-reloader-transformer/dist/injected"
+const controlLibSource = (control: ControlName) => {
+	switch (control) {
+	case "StandardControl": return `${injectLibSource}/controls`
+	case "ReactControl": return `${injectLibSource}/react`
+	}
+}
 
 /**
- * Build a namespace inmport for the injected code
+ * Build a namespace inmports for the injected code
  * 
  * ```
  * import * as _pcfReloadLib from "pcf-reloader-transformer/dist/injected"
+ * import { ReactControl } from "pcf-reloader-transformer/dist/inject/controls"
  * ```
  * @returns The import declaration for the injected code
  */
-export const createLibraryImport = () =>
+export const createLibraryImport = (control: ControlName) => [
 	factory.createImportDeclaration(
 		undefined,
 		undefined,
@@ -37,7 +45,19 @@ export const createLibraryImport = () =>
 			factory.createNamespaceImport(injectLibName)
 		),
 		toString(injectLibSource)
+	),
+	factory.createImportDeclaration(
+		undefined,
+		undefined,
+		factory.createImportClause(
+			false,
+			undefined,
+			factory.createNamespaceImport(controlLibName)
+		),
+		toString(controlLibSource(control)),
+		undefined
 	)
+]
 
 /**
  * Check if the injected code library has already been imported in the given source file
@@ -58,10 +78,8 @@ export const hasLibraryImport = (sourceFile: SourceFile) => {
 	return !!existingImportDecl
 }
 
-export type ControlType = keyof Pick<typeof Controls, "ReactControl"|"StandardControl">
-
 export type ControlHeritage = {
-	controlType: ControlType
+	controlType: ControlName
 	input: string
 	output: string
 }
@@ -84,7 +102,7 @@ export const getParameterNames = (node: ClassDeclaration): ControlHeritage|undef
 
 	// Map the control type
 	const controlTypeName = actualControlType.expression.getText()
-	const controlType: ControlType = standardControl === controlTypeName
+	const controlType: ControlName = standardControl === controlTypeName
 		? "StandardControl"
 		: "ReactControl"
 

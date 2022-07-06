@@ -7,7 +7,7 @@ import {
 import { log } from '../injected';
 import {
 	access,
-	accessLib,
+	accessControl,
 	call,
 	currentScriptName,
 	id,
@@ -31,7 +31,7 @@ function getConnectionAddress(opts: IPluginConfig): string {
 
 export function buildClass(className: string, parameters: ControlHeritage, opts: IPluginConfig): ClassDeclaration {
 	const heritage = factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
-		factory.createExpressionWithTypeArguments(accessLib(parameters.controlType), [
+		factory.createExpressionWithTypeArguments(accessControl(parameters.controlType), [
 			factory.createTypeReferenceNode(id(parameters.input)),
 			factory.createTypeReferenceNode(id(parameters.output))
 		])

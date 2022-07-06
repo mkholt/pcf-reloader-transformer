@@ -48,7 +48,7 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>
 
 		// Build the library import
-		const importDecl = createLibraryImport()
+		const importDecl = createLibraryImport(parameterNames.controlType)
 
 		// Get the current script element
 		const currentScript = createCurrentScriptAssignment()
@@ -84,7 +84,7 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 
 		// Return the updated source
 		return [
-			importDecl,
+			...importDecl,
 			currentScript,
 			newClass,
 			reloaderClass,
