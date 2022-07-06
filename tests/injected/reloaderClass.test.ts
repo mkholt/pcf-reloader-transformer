@@ -15,9 +15,9 @@ import {
 
 import {
 	doConnect,
-	StandardControl,
 	UpdateBuilder,
 } from '../../src/injected';
+import { StandardControl } from '../../src/injected/controls';
 import * as logger from '../../src/injected/logger';
 
 const logSpy = jest.spyOn(logger, 'log').mockImplementation().mockName('log')
