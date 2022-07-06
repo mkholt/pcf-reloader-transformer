@@ -18,22 +18,6 @@ export interface PCFReloaderWindow<ControlType extends WrappedControl> extends W
 
 const isScript = (s: HTMLOrSVGScriptElement|null): s is HTMLScriptElement => !!(s as HTMLScriptElement)?.src;
 
-/**
- * Call to update the lambda function used to instantiate the PCF component class.
- * 
- * This MUST be called before attempting to rebuild
- * @param className The name of the wrapped PCF component class
- * @param builder The lambda function building the instance½
- */
-export const UpdateBuilder = <ControlType extends WrappedControl>(className: string, builder: () => ControlType) => {
-	log(`Updating builder function for ${className}`)
-	const w = window as unknown as PCFReloaderWindow<ControlType>
-	w.pcfConstructors = {
-		...w.pcfConstructors,
-		[className]: builder
-	}
-}
-
 export type WrappedControl = ComponentFramework.ReactControl<unknown, unknown>|ComponentFramework.StandardControl<unknown, unknown>
 
 export abstract class BaseControl<ControlType extends WrappedControl, IInputs> implements ComponentWrapper {
