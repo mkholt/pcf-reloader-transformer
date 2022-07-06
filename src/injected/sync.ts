@@ -16,7 +16,7 @@ const bsConnect = (baseUrl: string, onReload: () => void, debug?: boolean) => {
 	_socket.on('connect', () => log("BrowserSync connected"))
 	_socket.on('browser:reload', onReload)
 
-	if (debug) {
+	if (debug && _socket.onAny) {
 		_socket.onAny((...args: unknown[]) => {
 			log("> " + JSON.stringify(args))
 		})
