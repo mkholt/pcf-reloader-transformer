@@ -2,10 +2,7 @@
  * @jest-environment jsdom
  */
 
-import {
-	mock,
-	mockClear,
-} from 'jest-mock-extended';
+import { mock } from 'jest-mock-extended';
 
 import {
 	fireEvent,
@@ -15,99 +12,37 @@ import {
 
 import {
 	doConnect,
-	UpdateBuilder,
+	GetBuilder,
 } from '../../src/injected';
 import { StandardControl } from '../../src/injected/controls';
-import * as logger from '../../src/injected/logger';
-
-const logSpy = jest.spyOn(logger, 'log').mockImplementation().mockName('log')
-const errorSpy = jest.spyOn(logger, 'error').mockImplementation().mockName('error')
+import {
+	errorSpy,
+	getScriptTag,
+	initBaseMocks,
+	initMocks,
+	logSpy,
+	mockWrapped,
+	queryScriptTag,
+	scriptTag,
+} from './control.base';
 
 jest.mock('../../src/injected/sync', () => ({
 	doConnect: jest.fn().mockName("doConnect"),
 	doDisconnect: jest.fn().mockName("doDisconnect")
 }))
 
-const init = () => {
-	const getConstructors = jest.fn<undefined|Record<string, (() => ComponentFramework.StandardControl<unknown, unknown>)|undefined>, []>()
-	const setConstructors = jest.fn<void, [Record<string, (() => ComponentFramework.StandardControl<unknown, unknown>)|undefined>]>()
+jest.mock('../../src/injected/builder', () => ({
+	UpdateBuilder: jest.fn().mockName("UpdateBuilder"),
+	GetBuilder: jest.fn().mockName("GetBuilder")
+}))
 
-	const component = mock<ComponentFramework.StandardControl<unknown, unknown>>({
-		init: jest.fn(),
-		updateView: jest.fn()
-	})
-
-	const wrapped = mock<ComponentFramework.StandardControl<unknown, unknown>>()
-	const builder = jest.fn().mockName("COMPONENT_BUILDER").mockReturnValue(wrapped)
-
-	beforeAll(() => {
-		Object.defineProperty(global.window, "pcfConstructors", {
-			configurable: true,
-			get: getConstructors,
-			set: setConstructors
-		})
-
-		getConstructors.mockReturnValue({
-			"COMPONENT_NAME": builder
-		})
-	})
+describe('Standard Wrapper class', () => {
+	const getBuilderMock = GetBuilder as jest.Mock
 
 	afterEach(() => {
-		mockClear(component)
 		jest.clearAllMocks()
 		jest.useRealTimers()
 		document.body.innerHTML = ''
-	})
-
-	return { getConstructors, setConstructors, builder, wrapped }
-}
-
-const scriptTag = (src?: string) => {
-	const scriptWrapper = document.createElement("div")
-
-	const scriptTag = document.createElement("script")
-	if (src !== "") {
-		scriptTag.src = src ?? "http://example.com"
-	}
-
-	const currentScript = scriptWrapper.appendChild(scriptTag)
-
-	return currentScript
-}
-
-const getScriptTag = () => getByTestId<HTMLScriptElement>(document.body, "reloader-script")
-const queryScriptTag = (): HTMLScriptElement|null => queryByTestId<HTMLScriptElement>(document.body, "reloader-script")
-
-const initBaseMocks = () => {
-	const context = mock<ComponentFramework.Context<unknown>>()
-	const noc = jest.fn().mockName("notifyOutputChanged")
-	const state = mock<ComponentFramework.Dictionary>()
-
-	return {context, noc, state}
-}
-
-const initMocks = () => {
-	const baseMocks = initBaseMocks()
-	const container = document.createElement("div")
-	document.body.appendChild(container)
-
-	return {...baseMocks, container}
-}
-
-describe('Wrapper class', () => {
-	const { getConstructors, setConstructors, builder, wrapped } = init()
-
-	it('stores builder function in window', () => {
-		// Given
-		getConstructors.mockReturnValueOnce(undefined)
-		const builder = jest.fn().mockName("builder")
-
-		// When
-		UpdateBuilder("<component>", builder)
-
-		// Then
-		expect(setConstructors).toBeCalledWith({ "<component>": builder })
-		expect(logSpy).toBeCalledWith("Updating builder function for <component>")
 	})
 
 	it('calls the builder on construction', () => {
@@ -118,14 +53,15 @@ describe('Wrapper class', () => {
 		new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
 
 		// Then
-		expect(builder).toBeCalled()
+		expect(GetBuilder).toBeCalledWith("COMPONENT_NAME")
 	})
 
 	it('calls connect and init', () => {
 		// Given
 		const currentScript = scriptTag()
-		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const wrapped = mockWrapped()
 
+		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
 		const {context, noc, state, container} = initMocks()
 
 		// When
@@ -141,6 +77,7 @@ describe('Wrapper class', () => {
 	it('does not wrap undefined container', () => {
 		// Given
 		const currentScript = scriptTag()
+		const wrapped = mockWrapped()
 		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
 		const {context, noc, state} = initBaseMocks()
 
@@ -155,6 +92,7 @@ describe('Wrapper class', () => {
 	it('calls updateView', () => {
 		// Given
 		const currentScript = scriptTag()
+		const wrapped = mockWrapped()
 		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
 
 		const context = mock<ComponentFramework.Context<unknown>>()
@@ -169,6 +107,7 @@ describe('Wrapper class', () => {
 	it('calls disconnect and destroy', () => {
 		// Given
 		const currentScript = scriptTag()
+		const wrapped = mockWrapped()
 		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
 
 		// When
@@ -181,6 +120,7 @@ describe('Wrapper class', () => {
 	it('can reload the component', () => {
 		// Given
 		const currentScript = scriptTag()
+		const wrapped = mockWrapped()
 		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
 
 		const {context, noc, state, container} = initMocks()
@@ -224,6 +164,7 @@ describe('Wrapper class', () => {
 	it('will initialize on onLoad', () => {
 		// Given
 		const currentScript = scriptTag()
+		const wrapped = mockWrapped()
 		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
 
 		const {context, noc, state, container} = initMocks()
@@ -234,7 +175,7 @@ describe('Wrapper class', () => {
 		reloader.reloadComponent()
 
 		const newWrapped = mock<ComponentFramework.StandardControl<unknown, unknown>>()
-		builder.mockReturnValueOnce(newWrapped)
+		getBuilderMock.mockReturnValueOnce(() => newWrapped)
 
 		const newScriptTag = getScriptTag()
 
@@ -242,7 +183,7 @@ describe('Wrapper class', () => {
 		fireEvent(newScriptTag, new Event("load"))
 
 		// Then
-		expect(builder).toHaveBeenCalledTimes(2)
+		expect(GetBuilder).toHaveBeenCalledTimes(2)
 		expect(newWrapped.init).toHaveBeenCalledWith(newContext, noc, state, expect.any(HTMLElement))
 		expect(newWrapped.updateView).toHaveBeenCalledWith(newContext)
 		expect(logSpy).toHaveBeenCalledWith(`Replacing wrapped instance of COMPONENT_NAME`)
@@ -329,6 +270,7 @@ describe('Wrapper class', () => {
 	it('does not render button if show force reload is false', () => {
 		// Given
 		const currentScript = scriptTag()
+		const wrapped = mockWrapped()
 		const reloader = new StandardControl("COMPONENT_NAME", "SOCKET_URL", currentScript, false)
 
 		const {context, noc, state, container} = initMocks()
@@ -350,7 +292,7 @@ describe('Wrapper class', () => {
 		reloader.reloadComponent()
 
 		const newWrapped = mock<ComponentFramework.StandardControl<unknown, unknown>>()
-		builder.mockReturnValueOnce(newWrapped)
+		getBuilderMock.mockReturnValueOnce(() => newWrapped)
 
 		const newScriptTag = getScriptTag()
 
@@ -359,7 +301,7 @@ describe('Wrapper class', () => {
 		newScriptTag.dispatchEvent(event)		
 
 		// Then
-		expect(builder).toHaveBeenCalledTimes(2)
+		expect(GetBuilder).toHaveBeenCalledTimes(2)
 		expect(newWrapped.init).not.toHaveBeenCalled()
 		expect(newWrapped.updateView).not.toHaveBeenCalled()
 		expect(logSpy).toHaveBeenCalledWith(`Replacing wrapped instance of COMPONENT_NAME`)
@@ -374,7 +316,7 @@ describe('Wrapper class', () => {
 		reloader.reloadComponent()
 
 		// Then
-		expect(builder).toHaveBeenCalledTimes(1)
+		expect(GetBuilder).toHaveBeenCalledTimes(1)
 		expect(queryScriptTag()).toBeNull()
 	})
 
@@ -390,7 +332,7 @@ describe('Wrapper class', () => {
 		reloader.reloadComponent()
 
 		// Then
-		expect(builder).toHaveBeenCalledTimes(1)
+		expect(GetBuilder).toHaveBeenCalledTimes(1)
 		expect(queryScriptTag()).toBeNull()
 	})
 
@@ -402,14 +344,14 @@ describe('Wrapper class', () => {
 		reloader.reloadComponent()
 
 		// Then
-		expect(builder).toHaveBeenCalledTimes(1)
+		expect(GetBuilder).toHaveBeenCalledTimes(1)
 		expect(queryScriptTag()).toBeNull()
 	})
 
 	it('handles no builder', () => {
 		// Given
 		const currentScript = scriptTag()
-		getConstructors.mockReturnValueOnce(undefined)
+		getBuilderMock.mockReturnValueOnce(undefined)
 		const {context, noc, state, container} = initMocks()
 
 		// When
@@ -419,7 +361,6 @@ describe('Wrapper class', () => {
 		reloader.destroy()
 
 		// Then
-		expect(getConstructors).toBeCalledTimes(1)
-		expect(builder).not.toBeCalled()
+		expect(GetBuilder).toBeCalledTimes(1)
 	})
 })
