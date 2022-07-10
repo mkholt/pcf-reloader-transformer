@@ -1,3 +1,4 @@
+import { GetBuilder } from '../builder';
 import { log } from '../logger';
 import {
 	ComponentWrapper,
@@ -10,10 +11,6 @@ type ReloadParams<IInputs> = {
     notifyOutputChanged?: () => void
     state?: ComponentFramework.Dictionary
     container?: HTMLDivElement
-}
-
-export interface PCFReloaderWindow<ControlType extends WrappedControl> extends Window {
-	pcfConstructors: Record<string, (() => ControlType)|undefined>
 }
 
 const isScript = (s: HTMLOrSVGScriptElement|null): s is HTMLScriptElement => !!(s as HTMLScriptElement)?.src;
@@ -77,9 +74,7 @@ export abstract class BaseControl<ControlType extends WrappedControl, IInputs> i
 	 * Build and update the wrapped instance
 	 */
 	protected buildWrapped() {
-		const className = this.className
-		const constructors = (window as unknown as PCFReloaderWindow<ControlType>).pcfConstructors || {}
-		const builder = constructors[className]
+		const builder = GetBuilder<ControlType>(this.className)
 		this.wrapped = builder?.call(this)
 
 		return this.wrapped
