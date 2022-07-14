@@ -8,6 +8,7 @@ import {
 import ComponentWrapper, {
 	ComponentMode,
 	ComponentWrapperProps,
+	ComponentWrapperState,
 } from './components/componentWrapper';
 
 type ComponentType<IInputs, IOutputs> = ComponentFramework.ReactControl<IInputs, IOutputs>
@@ -26,12 +27,14 @@ export class ReactControl<IInputs, IOutputs> extends BaseControl<ComponentType<I
 		}
 
 		const component = this.wrapped?.updateView(context)
+		
 		const props: ComponentWrapperProps = {
 			componentName: this.className,
 			component: component,
 			showForceReload: this.showForceReload,
 			onReload: () => this.reloadComponent()
 		}
+
 		return React.createElement(ComponentWrapper, {
 			...props,
 			ref: c => this._componentRef = c
@@ -51,7 +54,7 @@ export class ReactControl<IInputs, IOutputs> extends BaseControl<ComponentType<I
 		const component = wrapped.updateView(context)
 
 		// Set the state of the wrapper component to update the component and disable the spinner
-		this._componentRef?.setState({
+		this.setState({
 			component: component,
 			mode: ComponentMode.Component
 		})
@@ -60,9 +63,9 @@ export class ReactControl<IInputs, IOutputs> extends BaseControl<ComponentType<I
 	protected onScriptError(e: ErrorEvent): void {
 		error(`An error occurred loading the ${this.className} component:`, e.message)
 
-		this._componentRef?.setState({
+		this.setState({
 			mode: ComponentMode.Error
-		})		
+		})
 	}
 
 	protected wrapContainer(): undefined {
@@ -71,8 +74,12 @@ export class ReactControl<IInputs, IOutputs> extends BaseControl<ComponentType<I
 
 	protected showSpinner(): void {
 		// Tell the wrapper to show the spinner
-		this._componentRef?.setState({
+		this.setState({
 			mode: ComponentMode.Spinner
 		})
+	}
+
+	protected setState(state: ComponentWrapperState) {
+		this._componentRef?.setState(state)
 	}
 }
