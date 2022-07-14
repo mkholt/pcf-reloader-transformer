@@ -21,7 +21,6 @@ import {
 	initBaseMocks,
 	initMocks,
 	logSpy,
-	mockWrapped,
 	queryScriptTag,
 	scriptTag,
 } from './control.base';
@@ -38,6 +37,13 @@ jest.mock('../../src/injected/builder', () => ({
 
 describe('Standard Wrapper class', () => {
 	const getBuilderMock = GetBuilder as jest.Mock
+
+	const mockWrapped = () => {
+		const wrapped = mock<ComponentFramework.StandardControl<unknown, unknown>>();
+		(GetBuilder as jest.Mock).mockReturnValue(() => wrapped)
+	
+		return wrapped
+	}
 
 	afterEach(() => {
 		jest.clearAllMocks()

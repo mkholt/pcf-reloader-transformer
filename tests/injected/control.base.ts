@@ -5,7 +5,6 @@ import {
 	queryByTestId,
 } from '@testing-library/dom';
 
-import { GetBuilder } from '../../src/injected/builder';
 import * as logger from '../../src/injected/logger';
 
 export const logSpy = jest.spyOn(logger, 'log').mockImplementation().mockName('log')
@@ -22,13 +21,6 @@ export const scriptTag = (src?: string) => {
 	const currentScript = scriptWrapper.appendChild(scriptTag)
 
 	return currentScript
-}
-
-export const mockWrapped = () => {
-	const wrapped = mock<ComponentFramework.StandardControl<unknown, unknown>>();
-	(GetBuilder as jest.Mock).mockReturnValue(() => wrapped)
-
-	return wrapped
 }
 
 export const getScriptTag = () => getByTestId<HTMLScriptElement>(document.body, "reloader-script")
