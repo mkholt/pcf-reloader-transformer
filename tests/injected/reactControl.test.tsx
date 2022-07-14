@@ -237,7 +237,7 @@ describe('React Wrapper class', () => {
 		render(reloader.updateView(context))
 
 		jest.useFakeTimers().setSystemTime(1000)
-		const reloadButton = screen.getByTitle("Refresh")
+		const reloadButton = screen.getByTitle("Refresh component")
 		
 		// When
 		fireEvent.click(reloadButton)
