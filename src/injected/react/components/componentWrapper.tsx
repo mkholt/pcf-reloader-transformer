@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { initializeIcons } from '@fluentui/react';
 import {
 	IconButton,
 	MessageBarButton,
@@ -28,13 +29,8 @@ export type ComponentWrapperState = {
 	mode: ComponentMode
 }
 
-const styles: React.CSSProperties = {
-	position: "absolute",
-	top: "1px",
-	background: "none",
-	color: "#CCC",
-	border: "none",
-}
+// Initialize the icons (used for the spinner and refresh), but disable warning about already initialized
+initializeIcons(undefined, { disableWarnings: true });
 
 export class ComponentWrapper extends React.Component<ComponentWrapperProps, ComponentWrapperState> {
 	constructor(props: ComponentWrapperProps) {
@@ -48,9 +44,17 @@ export class ComponentWrapper extends React.Component<ComponentWrapperProps, Com
 
 	public render(): React.ReactNode {
 		return (
-			<div data-testid="ComponentWrapper">
+			<div style={{ position: 'relative' }}>
 				{this.props.showForceReload && (
-					<IconButton style={styles} iconProps={{iconName: 'refresh'}} onClick={this.props.onReload} />
+					<IconButton
+						title='Refresh component'
+						style={{
+							position: "absolute",
+							top: "1px",
+							left: "1px"
+						}}
+						iconProps={{iconName: 'refresh'}}
+						onClick={this.props.onReload} />
 				)}
 				{this.getInner()}
 			</div>
@@ -70,7 +74,7 @@ export class ComponentWrapper extends React.Component<ComponentWrapperProps, Com
 					<div>
 						<MessageBarButton onClick={this.props.onReload}>Try again</MessageBarButton>
 					</div>
-				}>
+				} isMultiline={false}>
 				An error occurred loading the component {this.props.componentName} - see console for details
 			</MessageBar>
 		}
