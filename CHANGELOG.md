@@ -1,6 +1,6 @@
 ## [1.3.0 (2022/xx/xx)](https://github.com/mkholt/pcf-reloader-transformer/releases/tag/v1.3.0)
 - Support for virtual components [#14](https://github.com/mkholt/pcf-reloader-transformer/issues/14)
-- Support for Socket.io v4 communication when used (BrowserSync >= 2.27.8)
+- Support for Socket.io v4 communication when used ([BrowserSync >= 2.27.8](https://github.com/BrowserSync/browser-sync/releases/tag/v2.27.8))
 
 ## [1.2.0 (2022/04/18)](https://github.com/mkholt/pcf-reloader-transformer/releases/tag/v1.2.0)
 - Restructure code to wrap in class instead of injecting directly in module [#12](https://github.com/mkholt/pcf-reloader-transformer/issues/12)
