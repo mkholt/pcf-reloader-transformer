@@ -2,7 +2,6 @@ import SocketIo from 'socket.io-client';
 
 import { log } from '../logger';
 import {
-	ComponentWrapper,
 	Connection,
 	Handler,
 } from './connection';
@@ -13,8 +12,8 @@ type SocketIo = {
 }
 
 export class SocketIOConnection extends Connection {
-	constructor(component: ComponentWrapper, baseUrl: string) {
-		super(component, baseUrl);
+	constructor(baseUrl: string) {
+		super(baseUrl);
 	}
 
 	ConnectInner(onReload: () => void): Handler {

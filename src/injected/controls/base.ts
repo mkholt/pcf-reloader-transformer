@@ -95,7 +95,7 @@ export abstract class BaseControl<ControlType extends WrappedControl, IInputs> i
 			container: innerContainer
 		};
 
-		this._connection.Connect();
+		this._connection.Connect(this);
 
 		this.wrapped?.init(context, notifyOutputChanged, state, innerContainer)
 	}

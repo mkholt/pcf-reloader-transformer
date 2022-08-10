@@ -11,11 +11,9 @@ export interface ComponentWrapper {
 
 export abstract class Connection {
 	protected baseUrl: string
-	private _component: ComponentWrapper
 	private _handler: Handler | undefined
 
-	constructor(component: ComponentWrapper, baseUrl: string) {
-		this._component = component
+	constructor(baseUrl: string) {
 		this.baseUrl = baseUrl
 	}
 
@@ -25,10 +23,10 @@ export abstract class Connection {
 	 * If the URL starts with http, use Browser-Sync (Socket.IO),
 	 * otherwise use classic WebSockets
 	 */
-	Connect(): void {
+	Connect(component: ComponentWrapper): void {
 		const onReload = () => {
 			log("Reload triggered")
-			this._component.reloadComponent()
+			component.reloadComponent()
 		}
 
 		this._handler = this.ConnectInner(onReload)

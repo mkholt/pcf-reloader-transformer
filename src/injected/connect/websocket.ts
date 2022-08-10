@@ -1,12 +1,11 @@
 import {
-	ComponentWrapper,
 	Connection,
 	Handler,
 } from './connection';
 
 export class WebSocketConnection extends Connection {
-	constructor(component: ComponentWrapper, baseUrl: string) {
-		super(component, baseUrl);
+	constructor(baseUrl: string) {
+		super(baseUrl);
 	}
 
 	ConnectInner(onReload: () => void): Handler {

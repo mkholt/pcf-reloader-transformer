@@ -61,7 +61,7 @@ export function buildClass(className: string, parameters: ControlHeritage, opts:
 	const showForceReload = opts.showForceReload !== false ? factory.createTrue() : factory.createFalse()
 
 	const connectionConstName = id("connection")
-	const connectionConstructor = factory.createNewExpression(access(connectionLibName, id(connectionInfo.connectionName)), undefined, [factory.createThis(), toString(connectionInfo.address)])
+	const connectionConstructor = factory.createNewExpression(access(connectionLibName, id(connectionInfo.connectionName)), undefined, [toString(connectionInfo.address)])
 	const connectionVar = declareConst(connectionConstName, connectionConstructor)
 
 	const superCall = stmt(call(factory.createSuper(), classNameString, access(connectionConstName), access(currentScriptName), showForceReload))
