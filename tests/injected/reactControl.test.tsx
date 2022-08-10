@@ -13,8 +13,8 @@ import {
 } from '@testing-library/react';
 
 import { GetBuilder } from '../../src/injected/builder';
-import { ReactControl } from '../../src/injected/react';
-import { doConnect } from '../../src/injected/sync';
+import { SocketIOConnection } from '../../src/injected/connect/socketio';
+import { ReactControl } from '../../src/injected/controls/reactControl';
 import {
 	errorSpy,
 	getScriptTag,
@@ -24,11 +24,6 @@ import {
 	scriptTag,
 } from './control.base';
 
-jest.mock('../../src/injected/sync', () => ({
-	doConnect: jest.fn().mockName("doConnect"),
-	doDisconnect: jest.fn().mockName("doDisconnect")
-}))
-
 jest.mock('../../src/injected/builder', () => ({
 	UpdateBuilder: jest.fn().mockName("UpdateBuilder"),
 	GetBuilder: jest.fn().mockName("GetBuilder")
@@ -37,6 +32,7 @@ jest.mock('../../src/injected/builder', () => ({
 
 describe('React Wrapper class', () => {
 	const getBuilderMock = GetBuilder as jest.Mock
+	const connectionMock = mock<SocketIOConnection>()
 
 	const mockWrapped = () => {
 		const updateViewMock = jest.fn<React.ReactElement<unknown, string | React.JSXElementConstructor<unknown>>, [ComponentFramework.Context<unknown>]>().mockName("updateView")
@@ -62,7 +58,7 @@ describe('React Wrapper class', () => {
 		const currentScript = scriptTag()
 
 		// When
-		new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		// Then
 		expect(GetBuilder).toBeCalledWith("COMPONENT_NAME")
@@ -73,14 +69,14 @@ describe('React Wrapper class', () => {
 		const currentScript = scriptTag()
 		const wrapped = mockWrapped()
 
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 		const {context, noc, state} = initMocks()
 
 		// When
 		reloader.init(context, noc, state)
 
 		// Then
-		expect(doConnect).toBeCalledWith(reloader, "SOCKET_URL")
+		expect(connectionMock.Connect).toBeCalledWith(reloader)
 		expect(wrapped.init).toHaveBeenCalledWith(context, noc, state, undefined)
 	})
 
@@ -88,7 +84,7 @@ describe('React Wrapper class', () => {
 		// Given
 		const currentScript = scriptTag()
 		const wrapped = mockWrapped()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		const context = mock<ComponentFramework.Context<unknown>>()
 
@@ -107,7 +103,7 @@ describe('React Wrapper class', () => {
 		// Given
 		const currentScript = scriptTag()
 		const wrapped = mockWrapped()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		// When
 		reloader.destroy()
@@ -121,7 +117,7 @@ describe('React Wrapper class', () => {
 		const currentScript = scriptTag()
 		const wrapped = mockWrapped()
 
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		const {context, noc, state} = initMocks()
 		reloader.init(context, noc, state)
@@ -145,7 +141,7 @@ describe('React Wrapper class', () => {
 	it('will replace the tag on each reload', () => {
 		// Given
 		const currentScript = scriptTag()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		const {context, noc, state, container} = initMocks()
 		reloader.init(context, noc, state, container)
@@ -167,7 +163,7 @@ describe('React Wrapper class', () => {
 	it('will initialize on onLoad', () => {
 		// Given
 		const currentScript = scriptTag()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		const {context, noc, state} = initMocks()
 		reloader.init(context, noc, state)
@@ -194,7 +190,7 @@ describe('React Wrapper class', () => {
 	it('allows manual reload on error', async () => {
 		// Given
 		const currentScript = scriptTag()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		const {context, noc, state} = initMocks()
 		reloader.init(context, noc, state)
@@ -229,7 +225,7 @@ describe('React Wrapper class', () => {
 	it('allows manual reload on button', () => {
 		// Given
 		const currentScript = scriptTag()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		const {context, noc, state} = initMocks()
 		reloader.init(context, noc, state)
@@ -252,7 +248,7 @@ describe('React Wrapper class', () => {
 		// Given
 		const currentScript = scriptTag()
 		const wrapped = mockWrapped()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, false)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, false)
 
 		const {context, noc, state} = initMocks()
 		reloader.init(context, noc, state)
@@ -268,7 +264,7 @@ describe('React Wrapper class', () => {
 	it('aborts if reloading without init', () => {
 		// Given
 		const currentScript = scriptTag()
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		reloader.reloadComponent()
 
@@ -291,7 +287,7 @@ describe('React Wrapper class', () => {
 	it('aborts reload without url', () => {
 		// Given
 		const currentScript = scriptTag("")
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		// When
 		reloader.reloadComponent()
@@ -307,7 +303,7 @@ describe('React Wrapper class', () => {
 		const scriptTag = document.createElementNS("http://www.w3.org/2000/svg", "script")
 		const currentScript = scriptWrapper.appendChild(scriptTag)
 		
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 
 		// When
 		reloader.reloadComponent()
@@ -319,7 +315,7 @@ describe('React Wrapper class', () => {
 
 	it('aborts reload if no script tag', () => {
 		// Given
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", null, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, null, true)
 
 		// When
 		reloader.reloadComponent()
@@ -336,7 +332,7 @@ describe('React Wrapper class', () => {
 		const {context, noc, state} = initMocks()
 
 		// When
-		const reloader = new ReactControl("COMPONENT_NAME", "SOCKET_URL", currentScript, true)
+		const reloader = new ReactControl("COMPONENT_NAME", connectionMock, currentScript, true)
 		reloader.init(context, noc, state)
 		reloader.updateView(context)
 		reloader.destroy()
