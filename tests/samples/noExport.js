@@ -17,7 +17,8 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
 var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
-var _pcfReloadControl = require("pcf-reloader-transformer/dist/injected/controls");
+var _pcfReloadControl = require("pcf-reloader-transformer/dist/injected/controls/standardControl");
+var _pcfReloadConnection = require("pcf-reloader-transformer/dist/injected/connect/socketio");
 var _pcfReloadCurrentScript = document.currentScript;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 var SampleComponent_reloaded_HASH = /** @class */ (function () {
@@ -62,7 +63,10 @@ var SampleComponent_reloaded_HASH = /** @class */ (function () {
 var SampleComponent = /** @class */ (function (_super) {
     __extends(SampleComponent, _super);
     function SampleComponent() {
-        return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true) || this;
+        var _this = this;
+        var connection = new _pcfReloadConnection.SocketIOConnection("http://localhost:8181");
+        _this = _super.call(this, "SampleComponent", connection, _pcfReloadCurrentScript, true) || this;
+        return _this;
     }
     return SampleComponent;
 }(_pcfReloadControl.StandardControl));
