@@ -9,6 +9,8 @@ import {
 } from 'typescript';
 
 import {
+	connectionLibName,
+	ConnectionName,
 	controlLibName,
 	ControlName,
 	injectLibName,
@@ -21,8 +23,15 @@ import {
 const injectLibSource = "pcf-reloader-transformer/dist/injected"
 const controlLibSource = (control: ControlName) => {
 	switch (control) {
-	case "StandardControl": return `${injectLibSource}/controls`
-	case "ReactControl": return `${injectLibSource}/react`
+	case "StandardControl": return `${injectLibSource}/controls/standardControl`
+	case "ReactControl": return `${injectLibSource}/controls/reactControl`
+	}
+}
+
+const connectionLibSource = (connection: ConnectionName) => {
+	switch (connection) {
+	case "SocketIOConnection": return `${injectLibSource}/connect/socketio`
+	case "WebSocketConnection": return `${injectLibSource}/connect/websocket`
 	}
 }
 
@@ -31,11 +40,12 @@ const controlLibSource = (control: ControlName) => {
  * 
  * ```
  * import * as _pcfReloadLib from "pcf-reloader-transformer/dist/injected"
- * import { ReactControl } from "pcf-reloader-transformer/dist/inject/controls"
+ * import * as _pcfReloadControl from "pcf-reloader-transformer/dist/injected/controls/standardControl"
+ * import * as _pcfReloadConnection from "pcf-reloader-transformer/dist/injected/connect/websocket"
  * ```
  * @returns The import declaration for the injected code
  */
-export const createLibraryImport = (control: ControlName) => [
+export const createLibraryImport = (control: ControlName, connection: ConnectionName) => [
 	factory.createImportDeclaration(
 		undefined,
 		undefined,
@@ -55,6 +65,17 @@ export const createLibraryImport = (control: ControlName) => [
 			factory.createNamespaceImport(controlLibName)
 		),
 		toString(controlLibSource(control)),
+		undefined
+	),
+	factory.createImportDeclaration(
+		undefined,
+		undefined,
+		factory.createImportClause(
+			false,
+			undefined,
+			factory.createNamespaceImport(connectionLibName)
+		),
+		toString(connectionLibSource(connection)),
 		undefined
 	)
 ]

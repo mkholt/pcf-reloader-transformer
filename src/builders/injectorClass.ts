@@ -9,7 +9,10 @@ import {
 	access,
 	accessControl,
 	call,
+	connectionLibName,
+	ConnectionName,
 	currentScriptName,
+	declareConst,
 	id,
 	stmt,
 	toString,
@@ -18,18 +21,33 @@ import { IPluginConfig } from '../pluginConfig';
 import {
 	defaultAddress,
 	getProtocol,
+	Protocol,
 } from '../protocol';
 import { ControlHeritage } from './imports';
 
-function getConnectionAddress(opts: IPluginConfig): string {
-	const protocol = getProtocol(opts)
-	const address = opts.wsAddress ?? defaultAddress(protocol)
-	if (opts.verbose) log(`Using protocol: ${protocol}, binding to: ${address}`)
-
-	return address
+export type ConnectionInfo = {
+	protocol: Protocol
+	address: string
+	connectionName: ConnectionName
 }
 
-export function buildClass(className: string, parameters: ControlHeritage, opts: IPluginConfig): ClassDeclaration {
+export function getConnectionInfo(opts: IPluginConfig): ConnectionInfo {
+	const protocol = getProtocol(opts)
+	const address = opts.wsAddress ?? defaultAddress(protocol)
+	const connectionName = (protocol == 'BrowserSync')
+		? "SocketIOConnection"
+		: "WebSocketConnection"
+
+	if (opts.verbose) log(`Using protocol: ${protocol}, binding to: ${address}`)
+
+	return {
+		protocol,
+		address,
+		connectionName
+	}
+}
+
+export function buildClass(className: string, parameters: ControlHeritage, opts: IPluginConfig, connectionInfo: ConnectionInfo): ClassDeclaration {
 	const heritage = factory.createHeritageClause(SyntaxKind.ExtendsKeyword, [
 		factory.createExpressionWithTypeArguments(accessControl(parameters.controlType), [
 			factory.createTypeReferenceNode(id(parameters.input)),
@@ -39,14 +57,19 @@ export function buildClass(className: string, parameters: ControlHeritage, opts:
 
 	const debuggerCall = opts.debug ? [factory.createDebuggerStatement()] : []
 
-	const connectionAddress = getConnectionAddress(opts)
 	const classNameString = toString(className)
 	const showForceReload = opts.showForceReload !== false ? factory.createTrue() : factory.createFalse()
-	const superCall = stmt(call(factory.createSuper(), classNameString, toString(connectionAddress), access(currentScriptName), showForceReload))
+
+	const connectionConstName = id("connection")
+	const connectionConstructor = factory.createNewExpression(access(connectionLibName, id(connectionInfo.connectionName)), undefined, [factory.createThis(), toString(connectionInfo.address)])
+	const connectionVar = declareConst(connectionConstName, connectionConstructor)
+
+	const superCall = stmt(call(factory.createSuper(), classNameString, access(connectionConstName), access(currentScriptName), showForceReload))
 
 	const members = [
 		factory.createConstructorDeclaration(undefined, undefined, [], factory.createBlock([
 			...debuggerCall,
+			connectionVar,
 			superCall
 		], true))
 	]

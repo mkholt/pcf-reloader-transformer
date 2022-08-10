@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { BaseControl } from '../controls/base';
+import { Connection } from '../connect/connection';
 import {
 	error,
 	log,
@@ -9,15 +9,16 @@ import ComponentWrapper, {
 	ComponentMode,
 	ComponentWrapperProps,
 	ComponentWrapperState,
-} from './components/componentWrapper';
+} from '../react/componentWrapper';
+import { BaseControl } from './base';
 
 type ComponentType<IInputs, IOutputs> = ComponentFramework.ReactControl<IInputs, IOutputs>
 
 export class ReactControl<IInputs, IOutputs> extends BaseControl<ComponentType<IInputs, IOutputs>, IInputs> implements ComponentType<IInputs, IOutputs> {
 	private _componentRef: ComponentWrapper|null = null
 
-	constructor(className: string, baseUrl: string, script: HTMLOrSVGScriptElement|null, showForceReload: boolean) {
-		super(className, baseUrl, script, showForceReload)
+	constructor(className: string, connection: Connection, script: HTMLOrSVGScriptElement|null, showForceReload: boolean) {
+		super(className, connection, script, showForceReload)
 	}
 
 	updateView(context: ComponentFramework.Context<IInputs>): React.ReactElement {

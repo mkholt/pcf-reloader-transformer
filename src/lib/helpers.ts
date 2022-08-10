@@ -11,15 +11,16 @@ import {
 } from 'typescript';
 
 import * as inject from '../injected';
+import * as connections from '../injected/connect';
 import * as controls from '../injected/controls';
-import * as reactControls from '../injected/react';
 import {
 	controlLibName,
 	injectLibName,
 } from './names';
 
 export type MethodName = keyof typeof inject
-export type ControlName = keyof typeof controls | keyof typeof reactControls
+export type ControlName = keyof typeof controls
+export type ConnectionName = keyof typeof connections
 
 export const id = factory.createIdentifier
 export const toString = factory.createStringLiteral

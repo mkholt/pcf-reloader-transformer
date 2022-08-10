@@ -1,10 +1,9 @@
 import { GetBuilder } from '../builder';
-import { log } from '../logger';
 import {
 	ComponentWrapper,
-	doConnect,
-	doDisconnect,
-} from '../sync';
+	Connection,
+} from '../connect/connection';
+import { log } from '../logger';
 
 type ReloadParams<IInputs> = {
     context: ComponentFramework.Context<IInputs>
@@ -18,7 +17,7 @@ const isScript = (s: HTMLOrSVGScriptElement|null): s is HTMLScriptElement => !!(
 export type WrappedControl = ComponentFramework.ReactControl<unknown, unknown>|ComponentFramework.StandardControl<unknown, unknown>
 
 export abstract class BaseControl<ControlType extends WrappedControl, IInputs> implements ComponentWrapper {
-	private _baseUrl: string
+	private _connection: Connection
 	private _remoteUrl: string
 
 	protected className: string
@@ -26,10 +25,10 @@ export abstract class BaseControl<ControlType extends WrappedControl, IInputs> i
 	protected showForceReload: boolean
 	protected params: ReloadParams<IInputs>|undefined
 
-	constructor(className: string, baseUrl: string, script: HTMLOrSVGScriptElement|null, showForceReload: boolean) {
+	constructor(className: string, connection: Connection, script: HTMLOrSVGScriptElement|null, showForceReload: boolean) {
 		log(`PCF Reloader initialized for ${className}`)
 		this.className = className
-		this._baseUrl = baseUrl
+		this._connection = connection
 		this._remoteUrl = isScript(script) ? script.src : ""
 		this.showForceReload = showForceReload
 		this.buildWrapped()
@@ -96,14 +95,14 @@ export abstract class BaseControl<ControlType extends WrappedControl, IInputs> i
 			container: innerContainer
 		};
 
-		doConnect(this, this._baseUrl);
+		this._connection.Connect();
 
 		this.wrapped?.init(context, notifyOutputChanged, state, innerContainer)
 	}
 
 	destroy(): void {
 		// Disconnect from the socket
-		doDisconnect()
+		this._connection.Disconnect();
 
 		// Clean up the parameters
 		this.params = undefined

@@ -1,17 +1,17 @@
+import { Connection } from '../connect/connection';
 import {
 	error,
 	log,
 } from '../logger';
 import ReloadButton from '../reloadButton';
 import Spinner from '../spinner';
-import { ComponentWrapper } from '../sync';
 import { BaseControl } from './base';
 
 type ControlType<IInputs, IOutputs> = ComponentFramework.StandardControl<IInputs, IOutputs>
 
-export class StandardControl<IInputs, IOutputs> extends BaseControl<ControlType<IInputs, IOutputs>, IInputs> implements ControlType<IInputs, IOutputs>, ComponentWrapper {
-	constructor(className: string, baseUrl: string, script: HTMLOrSVGScriptElement|null, showForceReload: boolean) {
-		super(className, baseUrl, script, showForceReload)
+export class StandardControl<IInputs, IOutputs> extends BaseControl<ControlType<IInputs, IOutputs>, IInputs> implements ControlType<IInputs, IOutputs> {
+	constructor(className: string, connection: Connection, script: HTMLOrSVGScriptElement|null, showForceReload: boolean) {
+		super(className, connection, script, showForceReload)
 	}
 
 	protected onLoadScript() {
