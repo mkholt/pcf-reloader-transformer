@@ -2,6 +2,7 @@ import {
 	ClassDeclaration,
 	factory,
 	forEachChild,
+	Identifier,
 	isImportDeclaration,
 	isTypeReferenceNode,
 	SourceFile,
@@ -35,6 +36,18 @@ const connectionLibSource = (connection: ConnectionName) => {
 	}
 }
 
+const createImport = (name: Identifier, source: string) =>
+	factory.createImportDeclaration(
+		undefined,
+		undefined,
+		factory.createImportClause(
+			false,
+			undefined,
+			factory.createNamespaceImport(name)
+		),
+		toString(source)
+	)
+
 /**
  * Build a namespace inmports for the injected code
  * 
@@ -46,38 +59,9 @@ const connectionLibSource = (connection: ConnectionName) => {
  * @returns The import declaration for the injected code
  */
 export const createLibraryImport = (control: ControlName, connection: ConnectionName) => [
-	factory.createImportDeclaration(
-		undefined,
-		undefined,
-		factory.createImportClause(
-			false,
-			undefined,
-			factory.createNamespaceImport(injectLibName)
-		),
-		toString(injectLibSource)
-	),
-	factory.createImportDeclaration(
-		undefined,
-		undefined,
-		factory.createImportClause(
-			false,
-			undefined,
-			factory.createNamespaceImport(controlLibName)
-		),
-		toString(controlLibSource(control)),
-		undefined
-	),
-	factory.createImportDeclaration(
-		undefined,
-		undefined,
-		factory.createImportClause(
-			false,
-			undefined,
-			factory.createNamespaceImport(connectionLibName)
-		),
-		toString(connectionLibSource(connection)),
-		undefined
-	)
+	createImport(injectLibName, injectLibSource),
+	createImport(controlLibName, controlLibSource(control)),
+	createImport(connectionLibName, connectionLibSource(connection))
 ]
 
 /**
