@@ -5,8 +5,8 @@
 import { Server } from 'mock-socket';
 import waitForExpect from 'wait-for-expect';
 
+import { WebSocketConnection } from '../../src/injected/connect';
 import { ComponentWrapper } from '../../src/injected/connect/connection';
-import { WebSocketConnection } from '../../src/injected/connect/websocket';
 import * as logger from '../../src/injected/logger';
 
 const log = jest.spyOn(logger, 'log').mockImplementation().mockName("log")

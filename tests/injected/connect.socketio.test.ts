@@ -9,8 +9,8 @@ import {
 } from 'socket.io';
 import waitForExpect from 'wait-for-expect';
 
+import { SocketIOConnection } from '../../src/injected/connect';
 import { ComponentWrapper } from '../../src/injected/connect/connection';
-import { SocketIOConnection } from '../../src/injected/connect/socketio';
 import * as logger from '../../src/injected/logger';
 
 const log = jest.spyOn(logger, 'log').mockImplementation().mockName('log')
