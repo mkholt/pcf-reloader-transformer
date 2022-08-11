@@ -16,7 +16,7 @@ export class SocketIOConnection extends Connection {
 		super(baseUrl);
 	}
 
-	ConnectInner(onReload: () => void): Handler {
+	protected ConnectInner(onReload: () => void): Handler {
 		const socketUrl = this.baseUrl + '/browser-sync'
 		const opts = {
 			reconnectionAttempts: 50,
