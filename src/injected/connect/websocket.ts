@@ -8,14 +8,11 @@ export class WebSocketConnection extends Connection {
 		super(baseUrl);
 	}
 
-	ConnectInner(onReload: () => void): Handler {
+	protected ConnectInner(onReload: () => void): Handler {
 		const socket = new WebSocket(this.baseUrl)
 		socket.onmessage = (msg: MessageEvent<string>) => {
-			if (msg.data !== "reload" && msg.data !== "refreshcss") {
-				return
-			}
-
-			onReload()
+			if (["reload","refreshcss"].indexOf(msg.data) > -1)
+				onReload()
 		}
 
 		return {
