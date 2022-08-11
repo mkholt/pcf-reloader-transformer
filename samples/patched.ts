@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import * as _pcfReloadLib from 'pcf-reloader-transformer/dist/injected';
+import * as _pcfReloadConnection
+  from 'pcf-reloader-transformer/dist/injected/connect/websocket';
+import * as _pcfReloadControl
+  from 'pcf-reloader-transformer/dist/injected/controls/standardControl';
 
 import {
   IInputs,
@@ -56,9 +60,9 @@ class SampleComponent_reloaded implements ComponentFramework.StandardControl<IIn
 		this._container.innerHTML = '';
 	}
 }
-export class SampleComponent extends _pcfReloadLib.ReloaderClass<IInputs, IOutputs> {
+export class SampleComponent extends _pcfReloadControl.StandardControl<IInputs, IOutputs> {
 	constructor() {
-		super("SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true);
+		super("SampleComponent", new _pcfReloadConnection.WebSocketConnection("http://localhost:8181"), _pcfReloadCurrentScript, true);
 	}
 }
 _pcfReloadLib.UpdateBuilder("SampleComponent", () => new SampleComponent_reloaded)

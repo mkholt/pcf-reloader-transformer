@@ -5,12 +5,9 @@
 import { Server } from 'mock-socket';
 import waitForExpect from 'wait-for-expect';
 
+import { WebSocketConnection } from '../../src/injected/connect';
+import { ComponentWrapper } from '../../src/injected/connect/connection';
 import * as logger from '../../src/injected/logger';
-import {
-	ComponentWrapper,
-	doConnect,
-	doDisconnect,
-} from '../../src/injected/sync';
 
 const log = jest.spyOn(logger, 'log').mockImplementation().mockName("log")
 
@@ -26,10 +23,11 @@ describe("sync integration (ws)", () => {
 
 	it("can connect and disconnect", (done) => {
 		const mockServer = new Server(wsAddr)
+		const connection = new WebSocketConnection(wsAddr)
 
 		mockServer.on('connection', () => {
 			expect(log).toBeCalledWith("Live reload enabled on " + wsAddr)
-			doDisconnect()
+			connection.Disconnect()
 		})
 
 		mockServer.on('close', () => {
@@ -37,11 +35,12 @@ describe("sync integration (ws)", () => {
 			mockServer.stop(done)
 		})
 
-		doConnect(reloader, wsAddr)
+		connection.Connect(reloader)
 	})
 
 	it.each<any>(["reload","refreshcss"])('calls reload on "%s"', (message: string, done: jest.DoneCallback) => {
 		const mockServer = new Server(wsAddr)
+		const connection = new WebSocketConnection(wsAddr)
 
 		mockServer.on('connection', (socket) => {
 			expect(log).toBeCalledWith("Live reload enabled on " + wsAddr)
@@ -56,25 +55,6 @@ describe("sync integration (ws)", () => {
 			})
 		})
 
-		doConnect(reloader, wsAddr)
-	})
-
-	it("does not call on invalid message", (done) => {
-		const mockServer = new Server(wsAddr)
-
-		mockServer.on('connection', (socket) => {
-			expect(log).toBeCalledWith("Live reload enabled on " + wsAddr)
-
-			socket.send("unknown")
-
-			waitForExpect(() => {
-				expect(log).toHaveBeenCalledWith("> unknown")
-			}).then(() => {
-				expect(reloader.reloadComponent).not.toHaveBeenCalled()
-				mockServer.stop(done)
-			})
-		})
-
-		doConnect(reloader, wsAddr, true)
+		connection.Connect(reloader)
 	})
 })

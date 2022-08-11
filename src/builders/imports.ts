@@ -2,6 +2,7 @@ import {
 	ClassDeclaration,
 	factory,
 	forEachChild,
+	Identifier,
 	isImportDeclaration,
 	isTypeReferenceNode,
 	SourceFile,
@@ -9,33 +10,59 @@ import {
 } from 'typescript';
 
 import {
-	baseClass,
+	connectionLibName,
+	ConnectionName,
+	controlLibName,
+	ControlName,
 	injectLibName,
 	printNode,
+	reactControl,
+	standardControl,
 	toString,
 } from '../lib';
 
 const injectLibSource = "pcf-reloader-transformer/dist/injected"
+const controlLibSource = (control: ControlName) => {
+	switch (control) {
+	case "StandardControl": return `${injectLibSource}/controls/standardControl`
+	case "ReactControl": return `${injectLibSource}/controls/reactControl`
+	}
+}
 
-/**
- * Build a namespace inmport for the injected code
- * 
- * ```
- * import * as _pcfReloadLib from "pcf-reloader-transformer/dist/injected"
- * ```
- * @returns The import declaration for the injected code
- */
-export const createLibraryImport = () =>
+const connectionLibSource = (connection: ConnectionName) => {
+	switch (connection) {
+	case "SocketIOConnection": return `${injectLibSource}/connect/socketio`
+	case "WebSocketConnection": return `${injectLibSource}/connect/websocket`
+	}
+}
+
+const createImport = (name: Identifier, source: string) =>
 	factory.createImportDeclaration(
 		undefined,
 		undefined,
 		factory.createImportClause(
 			false,
 			undefined,
-			factory.createNamespaceImport(injectLibName)
+			factory.createNamespaceImport(name)
 		),
-		toString(injectLibSource)
+		toString(source)
 	)
+
+/**
+ * Build a namespace inmports for the injected code
+ * 
+ * ```
+ * import * as _pcfReloadLib from "pcf-reloader-transformer/dist/injected"
+ * import * as _pcfReloadControl from "pcf-reloader-transformer/dist/injected/controls/standardControl"
+ * import * as _pcfReloadConnection from "pcf-reloader-transformer/dist/injected/connect/websocket"
+ * ```
+ * @returns The import declaration for the injected code
+ */
+export const createLibraryImport = (control: ControlName, connection: ConnectionName) => [
+	createImport(injectLibName, injectLibSource),
+	createImport(controlLibName, controlLibSource(control)),
+	createImport(connectionLibName, connectionLibSource(connection))
+]
 
 /**
  * Check if the injected code library has already been imported in the given source file
@@ -56,29 +83,37 @@ export const hasLibraryImport = (sourceFile: SourceFile) => {
 	return !!existingImportDecl
 }
 
-export type ParameterNames = {
+export type ControlHeritage = {
+	controlType: ControlName
 	input: string
 	output: string
 }
 
-export const getParameterNames = (node: ClassDeclaration): ParameterNames|undefined => {
+export const getParameterNames = (node: ClassDeclaration): ControlHeritage|undefined => {
 	// We're only interested in "implements" clauses, not "extends"
 	const clause = node.heritageClauses?.find(h => h.token === SyntaxKind.ImplementsKeyword)
 	if (!clause) return undefined
 
-	// We want it to implement "ComponentFramework.StandardControl"
-	const controlType = clause.types.find(t => t.expression.getText() === baseClass)
-	if (!controlType) return undefined
+	// We want it to implement "ComponentFramework.StandardControl" or "ComponentFramework.ReactControl"
+	const actualControlType = clause.types.find(t => [standardControl, reactControl].includes(t.expression.getText()))
+	if (!actualControlType) return undefined
 
 	// The control takes 2 parameters
-	if (controlType.typeArguments?.length != 2) return undefined
+	if (actualControlType.typeArguments?.length != 2) return undefined
 
 	// The parameters must be type references
-	const [input, output] = controlType.typeArguments
+	const [input, output] = actualControlType.typeArguments
 	if (!isTypeReferenceNode(input) || !isTypeReferenceNode(output)) return undefined
+
+	// Map the control type
+	const controlTypeName = actualControlType.expression.getText()
+	const controlType: ControlName = standardControl === controlTypeName
+		? "StandardControl"
+		: "ReactControl"
 
 	// Return the names of the type references
 	return {
+		controlType: controlType,
 		input: input.getText(),
 		output: output.getText()
 	}

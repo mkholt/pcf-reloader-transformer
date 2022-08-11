@@ -40,6 +40,7 @@ describe('Full sample compile', () => {
 		'notMatchingImplementsWithoutTypes',
 		'notMatchingImplementsWrongTypeCount',
 		'patched',
+		'reactControl',
 		'renamedParameters',
 	])('can handle full file (%s)', (f) => {
 		const { data, filePath } = readFile(`${f}.ts`)
@@ -112,11 +113,11 @@ describe('Full sample compile', () => {
 	})
 
 	it.each`
-		useBrowserSync	| protocol			| address
-		${true}			| ${'BrowserSync'}	| ${'http://localhost:8181'}
-		${false}		| ${'WebSocket'}	| ${'ws://127.0.0.1:8181/ws'}
-		${undefined}	| ${'BrowserSync'}	| ${'http://localhost:8181'}
-	`('can force protocol ($useBrowserSync)', ({useBrowserSync, protocol, address}) => {
+		useBrowserSync	| protocol			| address					  | connectionLib  | connectionName
+		${true}			| ${'BrowserSync'}	| ${'http://localhost:8181'}  | ${'socketio'}  | ${'SocketIOConnection'}
+		${false}		| ${'WebSocket'}	| ${'ws://127.0.0.1:8181/ws'} | ${'websocket'} | ${'WebSocketConnection'}
+		${undefined}	| ${'BrowserSync'}	| ${'http://localhost:8181'}  | ${'socketio'}  | ${'SocketIOConnection'}
+	`('can force protocol ($useBrowserSync)', ({useBrowserSync, protocol, address, connectionLib, connectionName}) => {
 		const { data, filePath } = readFile(`index.ts`)
 
 		const pluginOptions: IPluginConfig = {
@@ -132,7 +133,8 @@ describe('Full sample compile', () => {
 		})
 
 		const result = getResult("index.protocol")
-		expect(output.outputText).toBe(result.replace("%%ADDRESS%%", address))
+		const replaced = result.replace("%%ADDRESS%%", address).replace("%%CONNECTIONLIB%%", connectionLib).replace("%%CONNECTION%%", connectionName)
+		expect(output.outputText).toBe(replaced)
 
 		const matcher = useBrowserSync === undefined
 			? expect(logSpy)
@@ -143,12 +145,12 @@ describe('Full sample compile', () => {
 	})
 
 	it.each`
-		useBrowserSync	| addressIn	| protocol	| addressOut
-		${undefined}	| ${'http://some.tld:8181'}	| ${'BrowserSync'}	| ${'http://some.tld:8181'}
-		${true}			| ${'http://some.tld:8181'}	| ${'BrowserSync'}	| ${'http://some.tld:8181'}
-		${false}		| ${'ws://127.0.0.1/ws'}	| ${'WebSocket'}	| ${'ws://127.0.0.1/ws'}
-		${undefined}	| ${undefined}				| ${'BrowserSync'}	| ${'http://localhost:8181'}
-	`('can override address ($useBrowserSync, $addressIn)', ({useBrowserSync, addressIn, protocol, addressOut}) => {
+		useBrowserSync	| addressIn					| protocol			| addressOut				 | connectionLib  | connectionName
+		${undefined}	| ${'http://some.tld:8181'}	| ${'BrowserSync'}	| ${'http://some.tld:8181'}	 | ${'socketio'}  | ${'SocketIOConnection'}
+		${true}			| ${'http://some.tld:8181'}	| ${'BrowserSync'}	| ${'http://some.tld:8181'}	 | ${'socketio'}  | ${'SocketIOConnection'}
+		${false}		| ${'ws://127.0.0.1/ws'}	| ${'WebSocket'}	| ${'ws://127.0.0.1/ws'}	 | ${'websocket'} | ${'WebSocketConnection'}
+		${undefined}	| ${undefined}				| ${'BrowserSync'}	| ${'http://localhost:8181'} | ${'socketio'}  | ${'SocketIOConnection'}
+	`('can override address ($useBrowserSync, $addressIn)', ({useBrowserSync, addressIn, protocol, addressOut, connectionLib, connectionName}) => {
 		const { data, filePath } = readFile(`index.ts`)
 
 		const pluginOptions: IPluginConfig = {
@@ -165,7 +167,8 @@ describe('Full sample compile', () => {
 		})
 
 		const result = getResult("index.protocol")
-		expect(output.outputText).toBe(result.replace("%%ADDRESS%%", addressOut))
+		const replaced = result.replace("%%ADDRESS%%", addressOut).replace("%%CONNECTIONLIB%%", connectionLib).replace("%%CONNECTION%%", connectionName)
+		expect(output.outputText).toBe(replaced)
 		expect(logSpy).toHaveBeenCalledWith(`Using protocol: ${protocol}, binding to: ${addressOut}`)
 	})
 

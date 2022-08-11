@@ -9,12 +9,9 @@ import {
 } from 'socket.io';
 import waitForExpect from 'wait-for-expect';
 
+import { SocketIOConnection } from '../../src/injected/connect';
+import { ComponentWrapper } from '../../src/injected/connect/connection';
 import * as logger from '../../src/injected/logger';
-import {
-	ComponentWrapper,
-	doConnect,
-	doDisconnect,
-} from '../../src/injected/sync';
 
 const log = jest.spyOn(logger, 'log').mockImplementation().mockName('log')
 
@@ -53,10 +50,12 @@ describe("sync integration (bs)", () => {
 	})
 
 	it("can connect and disconnect", (done) => {
+		const connection = new SocketIOConnection(wsAddr)
+
 		ns.on("connection", (socket) => {
 			expect(log).toBeCalledWith("Live reload enabled on " + wsAddr + "/browser-sync")
 			waitForExpect(() => expect(log).toBeCalledWith("BrowserSync connected")).then(() => {
-				doDisconnect()
+				connection.Disconnect()
 			})
 
 			socket.on("disconnect", () => {
@@ -66,35 +65,21 @@ describe("sync integration (bs)", () => {
 		})
 
 		const reloader = mock<ComponentWrapper>()
-
-		doConnect(reloader, wsAddr)
+		connection.Connect(reloader)
 	})
 
 	it("calls reload", (done) => {
+		const connection = new SocketIOConnection(wsAddr)
 		ns.on("connection", (socket) => {
 			socket.emit("browser:reload")
 
 			waitForExpect(() => expect(log).toBeCalledWith("Reload triggered")).then(() => {
 				expect(reloader.reloadComponent).toHaveBeenCalled()
-				doDisconnect()
+				connection.Disconnect()
 				done()
 			})
 		})
 
-		doConnect(reloader, wsAddr)
-	})
-
-	it("does not call on invalid message", (done) => {
-		ns.on("connection", (socket) => {
-			socket.emit("unknown:event")
-
-			waitForExpect(() => expect(log).toBeCalledWith("> [\"unknown:event\"]")).then(() => {
-				expect(reloader.reloadComponent).not.toHaveBeenCalled()
-				doDisconnect()
-				done()
-			})
-		})
-
-		doConnect(reloader, wsAddr, true)
+		connection.Connect(reloader)
 	})
 })

@@ -1,4 +1,7 @@
-import { IInputs, IOutputs } from "./generated/ManifestTypes";
+import {
+  IInputs,
+  IOutputs,
+} from './generated/ManifestTypes';
 
 export class SampleComponent implements ComponentFramework.StandardControl<IInputs, IOutputs> {
 	private _container: HTMLDivElement

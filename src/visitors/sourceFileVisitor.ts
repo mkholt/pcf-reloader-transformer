@@ -8,18 +8,21 @@ import {
 } from 'typescript';
 
 import {
+	ControlHeritage,
 	createCurrentScriptAssignment,
 	createLibraryImport,
 	getParameterNames,
-	ParameterNames,
 } from '../builders';
 import { buildBuilderUpdate } from '../builders/builder';
-import { buildClass } from '../builders/injectorClass';
+import {
+	buildClass,
+	getConnectionInfo,
+} from '../builders/injectorClass';
 import { log } from '../injected/logger';
 import { id } from '../lib';
 import { IPluginConfig } from '../pluginConfig';
 
-const isValidNode = (node: Node): [ClassDeclaration, string, ParameterNames]|[] => {
+const isValidNode = (node: Node): [ClassDeclaration, string, ControlHeritage]|[] => {
 	// Check: Not a class, skip it
 	if (!isClassDeclaration(node)) return []
 
@@ -47,8 +50,11 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 
 		// We are in the main class, implementing ComponentFramework.StandardControl<IInputs, IOutputs>
 
+		// Get the information about the intended connection type
+		const connectionInfo = getConnectionInfo(opts)
+
 		// Build the library import
-		const importDecl = createLibraryImport()
+		const importDecl = createLibraryImport(parameterNames.controlType, connectionInfo.connectionName)
 
 		// Get the current script element
 		const currentScript = createCurrentScriptAssignment()
@@ -77,14 +83,14 @@ export const visitor = (sourceFile: SourceFile, opts: IPluginConfig) =>
 		)
 
 		// Build the injected class
-		const reloaderClass = buildClass(className, parameterNames, opts)
+		const reloaderClass = buildClass(className, parameterNames, opts, connectionInfo)
 
 		// Build the code for instantiating
 		const updateBuilder = buildBuilderUpdate(className, wrappedName, opts)
 
 		// Return the updated source
 		return [
-			importDecl,
+			...importDecl,
 			currentScript,
 			newClass,
 			reloaderClass,

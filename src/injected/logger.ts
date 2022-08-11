@@ -7,5 +7,8 @@ const timestamp = () => {
 
 const prefix = () => ["[" + timestamp() + "]", "[pcf-reloader]"]
 
-export const log = (...message: string[]) => console.log(...prefix(), ...message)
-export const error = (...message: string[]) => console.error(...prefix(), ...message)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const log = (...args: any) => console.log(...prefix(), ...args)
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const error = (...args: any) => console.error(...prefix(), ...args)

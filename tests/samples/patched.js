@@ -18,6 +18,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SampleComponent = void 0;
 /* eslint-disable @typescript-eslint/no-empty-function */
 var _pcfReloadLib = require("pcf-reloader-transformer/dist/injected");
+var _pcfReloadConnection = require("pcf-reloader-transformer/dist/injected/connect/websocket");
+var _pcfReloadControl = require("pcf-reloader-transformer/dist/injected/controls/standardControl");
 var _pcfReloadCurrentScript = document.currentScript;
 var SampleComponent_reloaded_HASH = /** @class */ (function () {
     /**
@@ -71,9 +73,9 @@ var SampleComponent_reloaded_HASH = /** @class */ (function () {
 var SampleComponent = /** @class */ (function (_super) {
     __extends(SampleComponent, _super);
     function SampleComponent() {
-        return _super.call(this, "SampleComponent", "http://localhost:8181", _pcfReloadCurrentScript, true) || this;
+        return _super.call(this, "SampleComponent", new _pcfReloadConnection.WebSocketConnection("http://localhost:8181"), _pcfReloadCurrentScript, true) || this;
     }
     return SampleComponent;
-}(_pcfReloadLib.ReloaderClass));
+}(_pcfReloadControl.StandardControl));
 exports.SampleComponent = SampleComponent;
 _pcfReloadLib.UpdateBuilder("SampleComponent", function () { return new SampleComponent_reloaded_HASH; });
