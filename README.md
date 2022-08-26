@@ -2,7 +2,7 @@
 [![npm](https://img.shields.io/npm/v/pcf-reloader-transformer)](https://www.npmjs.com/package/pcf-reloader-transformer)
 [![build](https://github.com/mkholt/pcf-reloader-transformer/actions/workflows/ci.yml/badge.svg)](https://github.com/mkholt/pcf-reloader-transformer/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/mkholt/pcf-reloader-transformer/badge.svg?branch=main)](https://coveralls.io/github/mkholt/pcf-reloader-transformer?branch=main)
-![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/pcf-reloader-transformer)
+[![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/pcf-reloader-transformer)](https://libraries.io/npm/pcf-reloader-transformer)
 ![npm](https://img.shields.io/npm/dw/pcf-reloader-transformer)
 ![NPM](https://img.shields.io/npm/l/pcf-reloader-transformer)
 
